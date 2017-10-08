@@ -12,10 +12,16 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.concurrent.CyclicBarrier;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 public class RestClient {
     
-    private static int threadNum = 10;
+    private static int threadNum = 100;
     private static int iterationNum = 100;
     private static String ip = "35.167.118.155";
     private static int port = 8080;
@@ -23,8 +29,8 @@ public class RestClient {
     private ExecutorService executor;
     private List<ClientThread> threads = new ArrayList<>();
     static CyclicBarrier barrier;
-    private static long requestCount;
-    private static long successCount;
+    private static long requestSum;
+    private static long successSum;
 
     public long clientProcessing(int threadNum, final int iterationNum,
             String ip, String port) {
@@ -77,8 +83,8 @@ public class RestClient {
     
     public static synchronized void updateCount(
             long requestDelta, long successDelta) {
-        requestCount += requestDelta;
-        successCount += successDelta;
+        requestSum += requestDelta;
+        successSum += successDelta;
     }
     
     private static String getDate() {
@@ -102,16 +108,50 @@ public class RestClient {
         }
         
         RestClient restClient = new RestClient();
-        System.out.println("Client starting ...... Time:" + getDate());
+        restClient.test();
+        /*System.out.println("Client starting ...... Time:" + getDate());
         long runTime = restClient.clientProcessing(
                 threadNum, iterationNum, ip, String.valueOf(port));
-        System.out.println("Total Number of requests sent: " + requestCount);
+        System.out.println("Total Number of requests sent: " + requestSum);
         System.out.println("Total Number of Successful responses: " + 
-                successCount);
+                successSum);
         
-        MetricsUtils metrics = new MetricsUtils();
+        MetricUtils metrics = new MetricUtils();
         metrics.getMetrics(restClient.getThreads(), runTime, 
-                requestCount, successCount);
-        System.out.println("Test Wall Time: " + runTime + " ms");
+                requestSum, successSum);
+        System.out.println("Test Wall Time: " + runTime + " ms");*/
+    }
+    
+    public void test() {
+        String myvert = "enting";
+        String skierID = "01";
+        int dayNum = 1;
+        String getUri = "http://localhost:9090/RestfulWebServices/rest/" 
+                + myvert + "/" + skierID + "&" + dayNum;
+        System.out.println("URI: " + getUri);
+        
+        String resortID = "resortID";
+        String timestamp = getDate();
+        String liftID = "3";
+        String postUri = "http://localhost:9090/RestfulWebServices/rest/" 
+                + "load/" + resortID + "&" + dayNum + "&" + timestamp 
+                + "&" + skierID + "&" + liftID;
+        //System.out.println("URI: " + getUri);
+        
+        Client client = ClientBuilder.newClient();
+        testGet(client.target(getUri));
+        //testPost(client.target(postUri));
+    }
+    
+    private static void testGet(WebTarget target) {
+        Response getResp = target.request(MediaType.TEXT_PLAIN).get();
+        String str = getResp.readEntity(String.class);
+        System.out.println("get result: " + str);
+        getResp.close();
+    }
+    
+    private static void testPost(WebTarget target) {
+        //Response postResp = target.request().post(Entity.);
+
     }
 }
