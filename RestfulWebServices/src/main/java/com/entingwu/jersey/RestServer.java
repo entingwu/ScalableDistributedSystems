@@ -1,13 +1,19 @@
 package com.entingwu.jersey;
 
+import com.entingwu.jersey.model.RFIDLiftData;
+import java.util.HashMap;
+import java.util.Map;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
 @Path("/")
 public class RestServer {
+    
+    private Map<Integer, RFIDLiftData> map = new HashMap<>();
     
     @GET
     @Path("/{myvert}/{skierID}&{dayNum}")
@@ -16,7 +22,11 @@ public class RestServer {
             @PathParam("skierID") int skierID,
             @PathParam("dayNum") int dayNum) {
         String vertical = myvert;
-        int liftNum = dayNum;
+        int liftNum = 0;
+        if (map.containsKey(skierID)) {
+            RFIDLiftData data = map.get(skierID);
+            liftNum = data.getLiftID();
+        }
         String result = new StringBuilder()
                 .append(vertical)
                 .append(",")
@@ -27,12 +37,18 @@ public class RestServer {
     
     @POST
     @Path("/load/{resortID}&{dayNum}&{timestamp}&{skierID}&{liftID}")
-    public Response postData(
-            @PathParam("resortID") int resortID,
-            @PathParam("dayNum") int dayNum,
-            @PathParam("timestamp") int timestamp,
-            @PathParam("skierID") int skierID,
-            @PathParam("liftID") int liftID) {
+    @Produces(value = "text/plain")
+    public String postData(
+            @PathParam("resortID") String resortID,
+            @PathParam("dayNum") String dayNum,
+            @PathParam("timestamp") String timestamp,
+            @PathParam("skierID") String skierID,
+            @PathParam("liftID") String liftID) {
+//        RFIDLiftData data = new RFIDLiftData(
+//                resortID, dayNum, timestamp, skierID, liftID);
+//        if (!map.containsKey(skierID)) {
+//            map.put(skierID, data);
+//        }
         String str = new StringBuilder()
                 .append(resortID)
                 .append(dayNum)
@@ -40,6 +56,8 @@ public class RestServer {
                 .append(skierID)
                 .append(liftID)
                 .toString();
-        return Response.status(200).entity(str).build();
+        System.out.println("sa bi" + str);
+        return str;
+        //return Response.status(200).entity(str).build();
     }
 }

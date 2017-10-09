@@ -131,16 +131,18 @@ public class RestClient {
         System.out.println("URI: " + getUri);
         
         String resortID = "resortID";
-        String timestamp = getDate();
+        String timestamp = "2017";
         String liftID = "3";
         String postUri = "http://localhost:9090/RestfulWebServices/rest/" 
                 + "load/" + resortID + "&" + dayNum + "&" + timestamp 
                 + "&" + skierID + "&" + liftID;
-        //System.out.println("URI: " + getUri);
+//        String postUri = "http://localhost:9090/RestfulWebServices/rest/" 
+//                + "load/" + resortID;
+        System.out.println("URI: " + postUri);
         
         Client client = ClientBuilder.newClient();
         testGet(client.target(getUri));
-        //testPost(client.target(postUri));
+        testPost(client.target(postUri));
     }
     
     private static void testGet(WebTarget target) {
@@ -151,7 +153,9 @@ public class RestClient {
     }
     
     private static void testPost(WebTarget target) {
-        //Response postResp = target.request().post(Entity.);
-
+        Response postResp = target.request().post(Entity.entity("laolao", MediaType.TEXT_PLAIN));
+        String str = postResp.readEntity(String.class);
+        System.out.println("post result: " + str);
+        postResp.close();
     }
 }
