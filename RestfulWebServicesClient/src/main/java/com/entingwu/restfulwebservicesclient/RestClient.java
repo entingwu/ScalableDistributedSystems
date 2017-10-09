@@ -54,7 +54,7 @@ public class RestClient {
         Thread readerThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                readFile(queue);
+                //readFile(queue);
             }
         });
         readerThread.start();
@@ -83,7 +83,7 @@ public class RestClient {
         return System.currentTimeMillis() - start;
     }
     
-    private void readFile(BlockingQueue<String> queue) {
+    private void readFile() {
         String resortID = "0";
         String dayNum = "3";
         String timestamp = "2017";
@@ -108,7 +108,7 @@ public class RestClient {
                         postUri = "http://localhost:9090/RestfulWebServices/rest/" 
                         + "load/" + resortID + "&" + dayNum + "&" + timestamp 
                         + "&" + skierID + "&" + liftID;
-                        queue.offer(postUri);
+                        //queue.offer(postUri);
                         //testPost(client.target(postUri));
                     }
                     System.out.println(line);
@@ -187,7 +187,7 @@ public class RestClient {
         System.out.println("URI: " + getUri);
         
         Client client = ClientBuilder.newClient();
-        //readFile();
+        readFile();
         //testPost(client.target(postUri));
         //testGet(client.target(getUri));
     }
