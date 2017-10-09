@@ -124,38 +124,38 @@ public class RestClient {
     
     public void test() {
         String myvert = "enting";
-        String skierID = "01";
-        int dayNum = 1;
+        String skierID = "6";
+        String dayNum = "3";
+        String resortID = "0";
+        String timestamp = "2017";
+        String liftID = "9";
+        
+        String postUri = "http://localhost:9090/RestfulWebServices/rest/" 
+                + "load/" + resortID + "&" + dayNum + "&" + timestamp 
+                + "&" + skierID + "&" + liftID;
+        System.out.println("URI: " + postUri);
+        
         String getUri = "http://localhost:9090/RestfulWebServices/rest/" 
                 + myvert + "/" + skierID + "&" + dayNum;
         System.out.println("URI: " + getUri);
         
-        String resortID = "resortID";
-        String timestamp = "2017";
-        String liftID = "3";
-        String postUri = "http://localhost:9090/RestfulWebServices/rest/" 
-                + "load/" + resortID + "&" + dayNum + "&" + timestamp 
-                + "&" + skierID + "&" + liftID;
-//        String postUri = "http://localhost:9090/RestfulWebServices/rest/" 
-//                + "load/" + resortID;
-        System.out.println("URI: " + postUri);
-        
         Client client = ClientBuilder.newClient();
-        testGet(client.target(getUri));
         testPost(client.target(postUri));
+        testGet(client.target(getUri));
     }
     
     private static void testGet(WebTarget target) {
         Response getResp = target.request(MediaType.TEXT_PLAIN).get();
         String str = getResp.readEntity(String.class);
-        System.out.println("get result: " + str);
+        System.out.println("get client: " + str);
         getResp.close();
     }
     
     private static void testPost(WebTarget target) {
-        Response postResp = target.request().post(Entity.entity("laolao", MediaType.TEXT_PLAIN));
+        Response postResp = target.request()
+                .post(Entity.entity("record", MediaType.TEXT_PLAIN));
         String str = postResp.readEntity(String.class);
-        System.out.println("post result: " + str);
+        System.out.println("post client: " + str);
         postResp.close();
     }
 }
