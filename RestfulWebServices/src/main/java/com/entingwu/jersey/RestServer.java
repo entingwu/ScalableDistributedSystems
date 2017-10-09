@@ -24,7 +24,7 @@ public class RestServer {
             @PathParam("skierID") String skierID,
             @PathParam("dayNum") String dayNum) {
         String vertical = myvert;
-        String liftNum = "3";
+        String liftNum = "0";
         for (String key : map.keySet()) {
             System.out.println("server: " + map.get(key).toString());
         }
@@ -59,8 +59,6 @@ public class RestServer {
         if (!map.containsKey(skierID)) {
             map.put(skierID, data);
             System.out.println("post server: " + map.get(skierID).toString());
-            //post server: resortID = 0, dayNum = 3, skierID = 6, liftID = 9, time2017
-            //int resortID, int dayNum, int skierID, int liftID, int time)
         }
         String str = new StringBuilder()
                 .append(resortID)

@@ -1,5 +1,9 @@
 package com.entingwu.restfulwebservicesclient;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -21,6 +25,9 @@ import javax.ws.rs.core.Response;
 
 public class RestClient {
     
+    private static final String REST_CLIENT = RestClient.class.getName();
+    private static final String FILE_NAME = 
+            "/Users/entingwu/NetBeansProjects/RestfulWebServicesClient/src/main/resources/BSDSAssignment2Day1.csv";
     private static int threadNum = 100;
     private static int iterationNum = 100;
     private static String ip = "35.167.118.155";
@@ -54,8 +61,7 @@ public class RestClient {
             try {
                 future.get();
             } catch (InterruptedException | ExecutionException ex) {
-                Logger.getLogger(
-                        RestClient.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(REST_CLIENT).log(Level.SEVERE, null, ex);
             }
         }
         
@@ -140,8 +146,47 @@ public class RestClient {
         System.out.println("URI: " + getUri);
         
         Client client = ClientBuilder.newClient();
-        testPost(client.target(postUri));
-        testGet(client.target(getUri));
+        readFile();
+        //testPost(client.target(postUri));
+        //testGet(client.target(getUri));
+    }
+    
+    private void readFile() {
+        Client client = ClientBuilder.newClient();
+        String resortID = "0";
+        String dayNum = "3";
+        String timestamp = "2017";
+        String skierID = "6";
+        String liftID = "9";
+        
+        BufferedReader br = null;
+        String line;
+        String postUri;
+        int i = 0;
+        try {
+            br = new BufferedReader(new FileReader(FILE_NAME));
+            while ((line = br.readLine()) != null) {
+                if (i > 0 && i < 10) {
+                    String[] strs = line.split(",");
+                    if (strs.length >= 5) {
+                        resortID = strs[0];
+                        dayNum = strs[1];
+                        liftID = strs[2];
+                        skierID = strs[3];
+                        timestamp = strs[4];
+                        postUri = "http://localhost:9090/RestfulWebServices/rest/" 
+                        + "load/" + resortID + "&" + dayNum + "&" + timestamp 
+                        + "&" + skierID + "&" + liftID;
+                        testPost(client.target(postUri));
+                    }
+                    System.out.println(line);
+                }
+                i++;
+            }
+            br.close();
+        } catch (IOException ex) {
+            Logger.getLogger(REST_CLIENT).log(Level.SEVERE, null, ex);
+        }
     }
     
     private static void testGet(WebTarget target) {
