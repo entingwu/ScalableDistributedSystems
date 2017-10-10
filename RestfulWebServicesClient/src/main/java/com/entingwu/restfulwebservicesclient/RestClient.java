@@ -17,12 +17,6 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.concurrent.CyclicBarrier;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 public class RestClient {
     
@@ -34,8 +28,7 @@ public class RestClient {
             "http://localhost:9090/RestfulWebServices/rest/";
     protected BlockingQueue<String> queue = null;
     
-    private static int threadNum = 5;
-    private static int iterationNum = 100;
+    private static int threadNum = 10;
     private static String ip = "35.167.118.155";
     private static int port = 8080;
     
@@ -45,28 +38,27 @@ public class RestClient {
     private static long requestSum;
     private static long successSum;
 
-    public long clientProcessing(int threadNum, final int iterationNum,
-            String ip, String port) {
+    public long clientProcessing(int threadNum, String ip, String port) {
         queue = new ArrayBlockingQueue<>(1024);
         executor = getExecutor(threadNum);
         barrier = new CyclicBarrier(threadNum);
         //final String uri = getServerAddress(ip, port);
-        Thread readerThread = new Thread(new Runnable() {
+        Thread reader = new Thread(new Runnable() {
             @Override
             public void run() {
-                //readFile(queue);
+                readFile(queue);
             }
         });
-        readerThread.start();
+        reader.start();
 
         long start = System.currentTimeMillis();
-        //System.out.println("All threads running...");
+        System.out.println("All threads running...");
         
         List<Future> futures = new ArrayList<>();
         for (int i = 0; i < threadNum; i++) {
-            ClientThread currentThread = new ClientThread(queue, iterationNum, barrier);
-            threads.add(currentThread);
-            Future future = executor.submit(currentThread);
+            ClientThread thread = new ClientThread(queue, barrier);
+            threads.add(thread);
+            Future future = executor.submit(thread);
             futures.add(future);
         }
         
@@ -79,39 +71,25 @@ public class RestClient {
         }
         
         executor.shutdown();
-        //System.out.println("All threads complete... Time: " + getDate());
+        System.out.println("All threads complete... Time: " + getDate());
         return System.currentTimeMillis() - start;
     }
     
-    private void readFile() {
-        String resortID = "0";
-        String dayNum = "3";
-        String timestamp = "2017";
-        String skierID = "6";
-        String liftID = "9";
-        
+    private void readFile(BlockingQueue<String> queue) {
+        String line, postUri;
         BufferedReader br = null;
-        String line;
-        String postUri;
         int i = 0;
         try {
             br = new BufferedReader(new FileReader(FILE_NAME));
             while ((line = br.readLine()) != null) {
-                if (i > 0 && i < 10) {
+                if (i > 0 && i < 11) {
                     String[] strs = line.split(",");
                     if (strs.length >= 5) {
-                        resortID = strs[0];
-                        dayNum = strs[1];
-                        liftID = strs[2];
-                        skierID = strs[3];
-                        timestamp = strs[4];
                         postUri = "http://localhost:9090/RestfulWebServices/rest/" 
-                        + "load/" + resortID + "&" + dayNum + "&" + timestamp 
-                        + "&" + skierID + "&" + liftID;
-                        //queue.offer(postUri);
-                        //testPost(client.target(postUri));
+                        + "load/" + strs[0] + "&" + strs[1] + "&" + strs[4] 
+                        + "&" + strs[3] + "&" + strs[2];
+                        queue.offer(postUri);
                     }
-                    System.out.println(line);
                 }
                 i++;
             }
@@ -119,6 +97,16 @@ public class RestClient {
         } catch (IOException ex) {
             Logger.getLogger(REST_CLIENT).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    private String getServerAddress(String ip, String port) {
+        return new StringBuilder()
+                .append("http://")
+                .append(ip)
+                .append(":")
+                .append(port)
+                .append("/RestfulWebServices/rest/server")
+                .toString();
     }
 
     private ExecutorService getExecutor(int threads) {
@@ -145,20 +133,19 @@ public class RestClient {
     }
 
     public static void main(String[] args) {
-        // 10 100 35.167.118.155 8080
-        System.out.println("thread_num iteration_num server_ip server_port");
-        if (args.length == 4) {
+        // 10 35.167.118.155 8080
+        System.out.println("thread_num server_ip server_port");
+        if (args.length == 3) {
             threadNum = Integer.parseInt(args[0]);
-            iterationNum = Integer.parseInt(args[1]);
-            ip = args[2];
-            port = Integer.parseInt(args[3]);
+            ip = args[1];
+            port = Integer.parseInt(args[2]);
         }
         
         RestClient restClient = new RestClient();
-        restClient.test();
-        /*System.out.println("Client starting ...... Time:" + getDate());
+  
+        System.out.println("Client starting ...... Time:" + getDate());
         long runTime = restClient.clientProcessing(
-                threadNum, iterationNum, ip, String.valueOf(port));
+                threadNum, ip, String.valueOf(port));
         System.out.println("Total Number of requests sent: " + requestSum);
         System.out.println("Total Number of Successful responses: " + 
                 successSum);
@@ -166,44 +153,6 @@ public class RestClient {
         MetricUtils metrics = new MetricUtils();
         metrics.getMetrics(restClient.getThreads(), runTime, 
                 requestSum, successSum);
-        System.out.println("Test Wall Time: " + runTime + " ms");*/
-    }
-    
-    public void test() {
-        String myvert = "enting";
-        String skierID = "6";
-        String dayNum = "3";
-        String resortID = "0";
-        String timestamp = "2017";
-        String liftID = "9";
-        
-        String postUri = "http://localhost:9090/RestfulWebServices/rest/" 
-                + "load/" + resortID + "&" + dayNum + "&" + timestamp 
-                + "&" + skierID + "&" + liftID;
-        System.out.println("URI: " + postUri);
-        
-        String getUri = "http://localhost:9090/RestfulWebServices/rest/" 
-                + myvert + "/" + skierID + "&" + dayNum;
-        System.out.println("URI: " + getUri);
-        
-        Client client = ClientBuilder.newClient();
-        readFile();
-        //testPost(client.target(postUri));
-        //testGet(client.target(getUri));
-    }
-    
-    private static void testGet(WebTarget target) {
-        Response getResp = target.request(MediaType.TEXT_PLAIN).get();
-        String str = getResp.readEntity(String.class);
-        System.out.println("get client: " + str);
-        getResp.close();
-    }
-    
-    private static void testPost(WebTarget target) {
-        Response postResp = target.request()
-                .post(Entity.entity("record", MediaType.TEXT_PLAIN));
-        String str = postResp.readEntity(String.class);
-        System.out.println("post client: " + str);
-        postResp.close();
+        System.out.println("Test Wall Time: " + runTime + " ms");
     }
 }
