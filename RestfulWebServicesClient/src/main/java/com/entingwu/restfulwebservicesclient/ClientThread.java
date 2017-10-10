@@ -17,7 +17,7 @@ import javax.ws.rs.core.Response;
 
 public class ClientThread implements Runnable {
     
-    private final BlockingQueue<String> queue;
+    private BlockingQueue<String> queue;
     private long requestCount;
     private long successCount;
     private List<Long> latencies = new ArrayList<>();
@@ -31,7 +31,10 @@ public class ClientThread implements Runnable {
     @Override
     public void run() {
         Client client = ClientBuilder.newClient();
-        while(!queue.isEmpty()) {
+        while(true) {
+            if (queue.isEmpty()) {
+                break;
+            }
             String uri = queue.poll();
             WebTarget webResource = client.target(uri);
             long start = System.currentTimeMillis();
@@ -39,19 +42,11 @@ public class ClientThread implements Runnable {
             long latency = System.currentTimeMillis() - start;
             latencies.add(latency);
             requestCount++;
-
             //start = System.currentTimeMillis();
             //doPost(webResource);
             //latency = System.currentTimeMillis() - start;
             //latencies.add(latency);
             //requestCount++;
-
-            try {
-                barrier.await();
-            } catch (InterruptedException | BrokenBarrierException ex) {
-                Logger.getLogger(ClientThread.class.getName())
-                        .log(Level.SEVERE, null, ex);
-            }
             RestClient.updateCount(requestCount, successCount);
         }
         client.close();

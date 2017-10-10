@@ -30,7 +30,8 @@ public class RestClient {
     
     private static int threadNum = 10;
     private static String ip = "35.167.118.155";
-    private static int port = 8080;
+    private static String port = "8080";
+    private static String remoteUri = getServerAddress(ip, port);
     
     private ExecutorService executor;
     private List<ClientThread> threads = new ArrayList<>();
@@ -42,7 +43,6 @@ public class RestClient {
         queue = new ArrayBlockingQueue<>(1024);
         executor = getExecutor(threadNum);
         barrier = new CyclicBarrier(threadNum);
-        //final String uri = getServerAddress(ip, port);
         Thread reader = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -82,12 +82,13 @@ public class RestClient {
         try {
             br = new BufferedReader(new FileReader(FILE_NAME));
             while ((line = br.readLine()) != null) {
-                if (i > 0 && i < 11) {
+                if (i > 0 && i < 13) {
                     String[] strs = line.split(",");
                     if (strs.length >= 5) {
-                        postUri = "http://localhost:9090/RestfulWebServices/rest/" 
-                        + "load/" + strs[0] + "&" + strs[1] + "&" + strs[4] 
-                        + "&" + strs[3] + "&" + strs[2];
+                        //postUri = SERVER_URI
+                        postUri = remoteUri
+                            + "load/" + strs[0] + "&" + strs[1] + "&" + strs[4] 
+                            + "&" + strs[3] + "&" + strs[2];
                         queue.offer(postUri);
                     }
                 }
@@ -99,13 +100,13 @@ public class RestClient {
         }
     }
     
-    private String getServerAddress(String ip, String port) {
+    private static String getServerAddress(String ip, String port) {
         return new StringBuilder()
                 .append("http://")
                 .append(ip)
                 .append(":")
                 .append(port)
-                .append("/RestfulWebServices/rest/server")
+                .append("/RestfulWebServices/rest/")
                 .toString();
     }
 
@@ -138,7 +139,7 @@ public class RestClient {
         if (args.length == 3) {
             threadNum = Integer.parseInt(args[0]);
             ip = args[1];
-            port = Integer.parseInt(args[2]);
+            port = args[2];
         }
         
         RestClient restClient = new RestClient();

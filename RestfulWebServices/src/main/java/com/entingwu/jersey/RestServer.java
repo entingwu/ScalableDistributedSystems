@@ -13,7 +13,7 @@ import javax.ws.rs.core.Response;
 
 @Path("/")
 public class RestServer {
-    // https://stackoverflow.com/questions/29339933/read-and-write-files-in-java-using-separate-threads
+    
     private static Map<String, RFIDLiftData> map = new HashMap<>();
     
     @GET
@@ -26,12 +26,8 @@ public class RestServer {
         System.out.println("map size" + map.size());
         String vertical = myvert;
         String liftNum = "0";
-        for (String key : map.keySet()) {
-            System.out.println("server: " + map.get(key).toString());
-        }
         if (map.containsKey(skierID)) {
             RFIDLiftData data = map.get(skierID);
-            System.out.println("get server: " + data.toString());
             liftNum = String.valueOf(data.getLiftID());
         }
         String str = new StringBuilder()
@@ -59,7 +55,6 @@ public class RestServer {
                 Integer.parseInt(timestamp));
         if (!map.containsKey(skierID)) {
             map.put(skierID, data);
-            System.out.println("post server: " + map.get(skierID).toString());
         }
         String str = new StringBuilder()
                 .append(resortID)
