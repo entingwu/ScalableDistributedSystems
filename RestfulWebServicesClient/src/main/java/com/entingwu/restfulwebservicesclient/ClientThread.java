@@ -31,24 +31,36 @@ public class ClientThread implements Runnable {
     @Override
     public void run() {
         Client client = ClientBuilder.newClient();
-        while(true) {
-            if (queue.isEmpty()) {
-                break;
+        WebTarget webResource;
+        try {
+            while(true) {
+                System.out.println("size: " + queue.size());
+                String uri = queue.take();
+                if(uri.equals("EOF")){ 
+                    break;
+                }
+                webResource = client.target(uri);
+                long start = System.currentTimeMillis();
+                doPost(webResource);
+                long latency = System.currentTimeMillis() - start;
+                latencies.add(latency);
+                requestCount++;
+                //start = System.currentTimeMillis();
+                //doPost(webResource);
+                //latency = System.currentTimeMillis() - start;
+                //latencies.add(latency);
+                //requestCount++;
             }
-            String uri = queue.poll();
-            WebTarget webResource = client.target(uri);
-            long start = System.currentTimeMillis();
-            doPost(webResource);
-            long latency = System.currentTimeMillis() - start;
-            latencies.add(latency);
-            requestCount++;
-            //start = System.currentTimeMillis();
-            //doPost(webResource);
-            //latency = System.currentTimeMillis() - start;
-            //latencies.add(latency);
-            //requestCount++;
-            RestClient.updateCount(requestCount, successCount);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(ClientThread.class.getName()).log(Level.SEVERE, null, ex);
         }
+        try {
+            barrier.await();
+        } catch (InterruptedException | BrokenBarrierException ex) {
+           Logger.getLogger(ClientThread.class.getName())
+                    .log(Level.SEVERE, null, ex);
+        }
+        RestClient.updateCount(requestCount, successCount);
         client.close();
     }
      

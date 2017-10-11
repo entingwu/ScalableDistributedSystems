@@ -28,7 +28,7 @@ public class RestClient {
             "http://localhost:9090/RestfulWebServices/rest/";
     protected BlockingQueue<String> queue = null;
     
-    private static int threadNum = 10;
+    private static int threadNum = 20;
     private static String ip = "35.167.118.155";
     private static String port = "8080";
     private static String remoteUri = getServerAddress(ip, port);
@@ -40,9 +40,9 @@ public class RestClient {
     private static long successSum;
 
     public long clientProcessing(int threadNum, String ip, String port) {
-        queue = new ArrayBlockingQueue<>(1024);
+        queue = new ArrayBlockingQueue<>(800000);
         executor = getExecutor(threadNum);
-        barrier = new CyclicBarrier(threadNum);
+        barrier = new CyclicBarrier(threadNum + 1);
         Thread reader = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -75,14 +75,14 @@ public class RestClient {
         return System.currentTimeMillis() - start;
     }
     
-    private void readFile(BlockingQueue<String> queue) {
+    private void readFile(BlockingQueue<String> queue){
         String line, postUri;
         BufferedReader br = null;
         int i = 0;
         try {
             br = new BufferedReader(new FileReader(FILE_NAME));
             while ((line = br.readLine()) != null) {
-                if (i > 0 && i < 13) {
+                if (i > 0 && i < 100) {
                     String[] strs = line.split(",");
                     if (strs.length >= 5) {
                         //postUri = SERVER_URI
@@ -91,11 +91,13 @@ public class RestClient {
                             + "&" + strs[3] + "&" + strs[2];
                         queue.offer(postUri);
                     }
+                    
                 }
                 i++;
             }
+            queue.put("EOF");
             br.close();
-        } catch (IOException ex) {
+        } catch (IOException | InterruptedException ex) {
             Logger.getLogger(REST_CLIENT).log(Level.SEVERE, null, ex);
         }
     }
@@ -151,9 +153,9 @@ public class RestClient {
         System.out.println("Total Number of Successful responses: " + 
                 successSum);
         
-        MetricUtils metrics = new MetricUtils();
-        metrics.getMetrics(restClient.getThreads(), runTime, 
-                requestSum, successSum);
+        //MetricUtils metrics = new MetricUtils();
+        //metrics.getMetrics(restClient.getThreads(), runTime, 
+        //        requestSum, successSum);
         System.out.println("Test Wall Time: " + runTime + " ms");
     }
 }
