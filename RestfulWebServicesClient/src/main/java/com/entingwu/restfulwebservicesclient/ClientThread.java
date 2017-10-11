@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.ClientErrorException;
@@ -18,14 +19,18 @@ import javax.ws.rs.core.Response;
 public class ClientThread implements Runnable {
     
     private BlockingQueue<String> queue;
+    private CyclicBarrier barrier;
+    private AtomicBoolean isDone;
     private long requestCount;
     private long successCount;
     private List<Long> latencies = new ArrayList<>();
-    private CyclicBarrier barrier;
     
-    public ClientThread(BlockingQueue<String> queue, CyclicBarrier barrier) {
+    
+    public ClientThread(BlockingQueue<String> queue, CyclicBarrier barrier, 
+            AtomicBoolean isDone) {
         this.queue = queue;
         this.barrier = barrier;
+        this.isDone = isDone;
     }
     
     @Override
@@ -33,10 +38,11 @@ public class ClientThread implements Runnable {
         Client client = ClientBuilder.newClient();
         WebTarget webResource;
         try {
-            while(true) {
+            while(isDone.get() == false) {
                 System.out.println("size: " + queue.size());
                 String uri = queue.take();
                 if(uri.equals("EOF")){ 
+                    isDone.set(true);
                     break;
                 }
                 webResource = client.target(uri);
@@ -54,6 +60,7 @@ public class ClientThread implements Runnable {
         } catch (InterruptedException ex) {
             Logger.getLogger(ClientThread.class.getName()).log(Level.SEVERE, null, ex);
         }
+        System.out.println("Fin");
         try {
             barrier.await();
         } catch (InterruptedException | BrokenBarrierException ex) {

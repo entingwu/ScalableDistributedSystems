@@ -17,6 +17,7 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RestClient {
     
@@ -27,6 +28,7 @@ public class RestClient {
     private static final String SERVER_URI = 
             "http://localhost:9090/RestfulWebServices/rest/";
     protected BlockingQueue<String> queue = null;
+    private AtomicBoolean isDone = new AtomicBoolean(false);
     
     private static int threadNum = 20;
     private static String ip = "35.167.118.155";
@@ -42,7 +44,7 @@ public class RestClient {
     public long clientProcessing(int threadNum, String ip, String port) {
         queue = new ArrayBlockingQueue<>(800000);
         executor = getExecutor(threadNum);
-        barrier = new CyclicBarrier(threadNum + 1);
+        barrier = new CyclicBarrier(threadNum);
         Thread reader = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -56,7 +58,7 @@ public class RestClient {
         
         List<Future> futures = new ArrayList<>();
         for (int i = 0; i < threadNum; i++) {
-            ClientThread thread = new ClientThread(queue, barrier);
+            ClientThread thread = new ClientThread(queue, barrier, isDone);
             threads.add(thread);
             Future future = executor.submit(thread);
             futures.add(future);
@@ -82,7 +84,7 @@ public class RestClient {
         try {
             br = new BufferedReader(new FileReader(FILE_NAME));
             while ((line = br.readLine()) != null) {
-                if (i > 0 && i < 100) {
+                if (i > 0 && i < 30) {
                     String[] strs = line.split(",");
                     if (strs.length >= 5) {
                         //postUri = SERVER_URI
