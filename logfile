@@ -1,0 +1,36 @@
+LOG:  database system was shut down at 2017-10-15 12:45:19 PDT
+LOG:  MultiXact member wraparound protections are now enabled
+LOG:  autovacuum launcher started
+LOG:  database system is ready to accept connections
+LOG:  incomplete startup packet
+LOG:  incomplete startup packet
+ERROR:  role "postgres" does not exist
+STATEMENT:  ALTER USER postgres PASSWORD 'md5e8a48653851e28c69d0506508fb27fc5'
+ERROR:  role "postgres" does not exist
+STATEMENT:  ALTER USER postgres PASSWORD 'md5a556ae2ea3e7419a10590073fd76ba94'
+ERROR:  syntax error at or near "psql" at character 1
+STATEMENT:  psql -U postgres
+	psql -U entingwu
+	ALTER USER entingwu PASSWORD "entingwu1221"
+	ALTER USER entingwu PASSWORD entingwu1221
+	psql -U entingwu
+	ALTER USER entingwu PASSWORD 'entingwu1221';
+ERROR:  syntax error at or near "psql" at character 1
+STATEMENT:  psql -U entingwu;
+ERROR:  syntax error at or near "psql" at character 1
+STATEMENT:  psql -U entingwu
+	ALTER USER entingwu PASSWORD 'entingwu1221';
+ERROR:  syntax error at or near "sudo" at character 1
+STATEMENT:  sudo -u entingwu psql postgresql
+	;
+FATAL:  database "postgresql" does not exist
+FATAL:  database "entingwu" does not exist
+FATAL:  database "postgresql" does not exist
+ERROR:  syntax error at or near "Create" at character 22
+STATEMENT:  ALTER ROLE christywu Create role;
+ERROR:  syntax error at or near "createuser" at character 1
+STATEMENT:  createuser christywu
+	;
+ERROR:  syntax error at or near "createuser" at character 1
+STATEMENT:  createuser -P -s -e christywu
+	;

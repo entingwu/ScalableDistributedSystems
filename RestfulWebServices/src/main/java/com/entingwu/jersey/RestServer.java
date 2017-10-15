@@ -10,34 +10,24 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 @Path("/")
-//@Produces(MediaType.APPLICATION_JSON)
 public class RestServer {
     
     private static Map<String, Record> map = new HashMap<>();
     
     @GET
-    @Path("/{myvert}/{skierID}&{dayNum}")
-    @Consumes(value = "text/plain")
-    public Response getData(
-            @PathParam("myvert") String myvert,
+    @Path("/myvert/{skierID}&{dayNum}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Record getData(
             @PathParam("skierID") String skierID,
             @PathParam("dayNum") String dayNum) {
-        System.out.println("map size" + map.size());
-        String vertical = myvert;
-        String liftNum = "0";
+        Record record = new Record();
         if (map.containsKey(skierID)) {
-            Record data = map.get(skierID);
-            liftNum = String.valueOf(data.getLiftID());
+            record = map.get(skierID);
+            System.out.println("get: " + record.toString());
         }
-        String str = new StringBuilder()
-                .append(vertical)
-                .append(",")
-                .append(liftNum)
-                .toString();
-        return Response.status(200).entity(str).build();
+        return record;
     }
     
     @POST
@@ -45,7 +35,10 @@ public class RestServer {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Record postData(Record record) {
-        System.out.println(record.toString());
+        System.out.println("post: " + record.toString());
+        if (!map.containsKey(record.getSkierID())) {
+            map.put(record.getSkierID(), record);
+        }
         return record;
     }
 }

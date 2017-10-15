@@ -18,19 +18,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class RestClient {
     
     private static final String REST_CLIENT = RestClient.class.getName();
-    private static final String FILE_NAME = 
-            "/Users/entingwu/NetBeansProjects/RestfulWebServicesClient/"
-            + "src/main/resources/BSDSAssignment2Day1.csv";
-    private static final String SERVER_URI = 
-            "http://localhost:9090/RestfulWebServices/rest/";
-    protected ConcurrentLinkedQueue<Record> queue = null;
-    private AtomicBoolean isDone = new AtomicBoolean(false);
-    
-    private static int threadNum = 10;
+    private static final String LOCAL_URI = 
+            "http://localhost:9090/RestfulWebServices/rest";
     private static String ip = "35.167.118.155";
     private static String port = "8080";
     private static String remoteUri = getServerAddress(ip, port);
+    private static int threadNum = 10;
     
+    protected ConcurrentLinkedQueue<Record> queue = null;
+    private AtomicBoolean isDone = new AtomicBoolean(false);
     private ExecutorService executor;
     private List<ClientThread> threads = new ArrayList<>();
     static CyclicBarrier barrier;
@@ -55,7 +51,7 @@ public class RestClient {
         
         List<Future> futures = new ArrayList<>();
         for (int i = 0; i < threadNum; i++) {
-            ClientThread thread = new ClientThread(queue, SERVER_URI, barrier, isDone);
+            ClientThread thread = new ClientThread(queue, remoteUri, barrier, isDone);
             threads.add(thread);
             Future future = executor.submit(thread);
             futures.add(future);
@@ -80,7 +76,7 @@ public class RestClient {
                 .append(ip)
                 .append(":")
                 .append(port)
-                .append("/RestfulWebServices/rest/")
+                .append("/RestfulWebServices/rest")
                 .toString();
     }
 

@@ -1,7 +1,6 @@
 package com.entingwu.restfulwebservicesclient;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+import static java.net.HttpURLConnection.HTTP_OK;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BrokenBarrierException;
@@ -10,16 +9,16 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ws.rs.ClientErrorException;
+import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 public class ClientThread implements Runnable {
     
+    private static final String CLIENT_THREAD = ClientThread.class.getName();
     private ConcurrentLinkedQueue<Record> queue;
     private CyclicBarrier barrier;
     private AtomicBoolean isDone;
@@ -57,8 +56,9 @@ public class ClientThread implements Runnable {
             long latency = System.currentTimeMillis() - start;
             latencies.add(latency);
             requestCount++;
+            
             //start = System.currentTimeMillis();
-            //doPost(webResource);
+            //doGet(client, record, uri);
             //latency = System.currentTimeMillis() - start;
             //latencies.add(latency);
             //requestCount++;
@@ -67,44 +67,41 @@ public class ClientThread implements Runnable {
         try {
             barrier.await();
         } catch (InterruptedException | BrokenBarrierException ex) {
-           Logger.getLogger(ClientThread.class.getName())
-                    .log(Level.SEVERE, null, ex);
+           Logger.getLogger(CLIENT_THREAD).log(Level.SEVERE, null, ex);
         }
         RestClient.updateCount(requestCount, successCount);
         client.close();
     }
      
     private void doPost(Client client, Record record, String uri) {
+        String postUrl = uri + "/load";
+        System.out.println(postUrl);
         try {
-            URL url = new URL("http", "localhost", 9090, "/RestfulWebServices/rest/load");
-            System.out.println(url.toString());
-            WebTarget target = client.target(url.toString());
-            Response postResp = target.request()
+            WebTarget target = client.target(postUrl);
+            Response response = target.request()
                 .post(Entity.json(record));
-            if (postResp.getStatus() != 200) {
-                throw new RuntimeException(
-                        "Failed: HTTP post error: " + postResp.getStatus());
+            if (response.getStatus() == HTTP_OK) {
+                successCount++;
             }
-            successCount++;
-            postResp.close();
-        } catch (RuntimeException | MalformedURLException e) {
-            e.printStackTrace();
+            response.close();
+        } catch (ProcessingException e) {
+            Logger.getLogger(CLIENT_THREAD).log(Level.SEVERE, null, e);
         }
     }
     
-    private void doGet(WebTarget target) throws ClientErrorException {
+    private void doGet(Client client, Record record, String uri) {
+        String getUrl = uri + "/myvert/" + 
+                record.getSkierID() + "&" + record.getDayNum();
+        System.out.println(getUrl);
         try {
-            Response getResp = target.request(MediaType.TEXT_PLAIN).get();
-            if (getResp.getStatus() != 200) {
-                throw new RuntimeException(
-                        "Failed: HTTP get error: " + getResp.getStatus());
-            }
-            String str = getResp.readEntity(String.class);
-            System.out.println("do get: " + str + ", id: " + Thread.currentThread().getId());
-            successCount++;
-            getResp.close();
-        } catch (Exception e) {
-            e.printStackTrace();
+            WebTarget target = client.target(getUrl);
+            Response response = target.request().get();
+            if (response.getStatus() == HTTP_OK) {
+                successCount++;
+            }            
+            response.close();
+        } catch (ProcessingException e) {
+            Logger.getLogger(CLIENT_THREAD).log(Level.SEVERE, null, e);
         }
     }
     

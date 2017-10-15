@@ -52,8 +52,8 @@ public class Record  {
     
     @Override
     public String toString() {
-        return "resortID = " + resortID + "'\', dayNum = " + dayNum + 
-                "'\', skierID = " + skierID + "'\', liftID = " + liftID + 
-                "'\', time = " + time;
+        return "resortID = " + resortID + ", dayNum = " + dayNum + 
+                ", skierID = " + skierID + ", liftID = " + liftID + 
+                ", time = " + time;
     }
 }
