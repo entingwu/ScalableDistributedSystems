@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -27,10 +27,10 @@ public class RestClient {
             + "src/main/resources/BSDSAssignment2Day1.csv";
     private static final String SERVER_URI = 
             "http://localhost:9090/RestfulWebServices/rest/";
-    protected BlockingQueue<String> queue = null;
+    protected ConcurrentLinkedQueue<String> queue = null;
     private AtomicBoolean isDone = new AtomicBoolean(false);
     
-    private static int threadNum = 20;
+    private static int threadNum = 10;
     private static String ip = "35.167.118.155";
     private static String port = "8080";
     private static String remoteUri = getServerAddress(ip, port);
@@ -42,7 +42,7 @@ public class RestClient {
     private static long successSum;
 
     public long clientProcessing(int threadNum, String ip, String port) {
-        queue = new ArrayBlockingQueue<>(800000);
+        queue = new ConcurrentLinkedQueue<>();
         executor = getExecutor(threadNum);
         barrier = new CyclicBarrier(threadNum);
         Thread reader = new Thread(new Runnable() {
@@ -77,7 +77,7 @@ public class RestClient {
         return System.currentTimeMillis() - start;
     }
     
-    private void readFile(BlockingQueue<String> queue){
+    private void readFile(ConcurrentLinkedQueue<String> queue){
         String line, postUri;
         BufferedReader br = null;
         int i = 0;
@@ -97,9 +97,9 @@ public class RestClient {
                 }
                 i++;
             }
-            queue.put("EOF");
+            queue.offer("EOF");
             br.close();
-        } catch (IOException | InterruptedException ex) {
+        } catch (IOException ex) {
             Logger.getLogger(REST_CLIENT).log(Level.SEVERE, null, ex);
         }
     }

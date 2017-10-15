@@ -2,8 +2,8 @@ package com.entingwu.restfulwebservicesclient;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -18,7 +18,7 @@ import javax.ws.rs.core.Response;
 
 public class ClientThread implements Runnable {
     
-    private BlockingQueue<String> queue;
+    private ConcurrentLinkedQueue<String> queue;
     private CyclicBarrier barrier;
     private AtomicBoolean isDone;
     private long requestCount;
@@ -26,7 +26,7 @@ public class ClientThread implements Runnable {
     private List<Long> latencies = new ArrayList<>();
     
     
-    public ClientThread(BlockingQueue<String> queue, CyclicBarrier barrier, 
+    public ClientThread(ConcurrentLinkedQueue<String> queue, CyclicBarrier barrier, 
             AtomicBoolean isDone) {
         this.queue = queue;
         this.barrier = barrier;
@@ -37,30 +37,33 @@ public class ClientThread implements Runnable {
     public void run() {
         Client client = ClientBuilder.newClient();
         WebTarget webResource;
-        try {
-            while(isDone.get() == false) {
-                System.out.println("size: " + queue.size());
-                String uri = queue.take();
-                if(uri.equals("EOF")){ 
-                    isDone.set(true);
-                    break;
-                }
-                webResource = client.target(uri);
-                long start = System.currentTimeMillis();
-                doPost(webResource);
-                long latency = System.currentTimeMillis() - start;
-                latencies.add(latency);
-                requestCount++;
-                //start = System.currentTimeMillis();
-                //doPost(webResource);
-                //latency = System.currentTimeMillis() - start;
-                //latencies.add(latency);
-                //requestCount++;
+        while(!isDone.get()) {
+            String uri = null;
+            if (!queue.isEmpty()) {
+                uri = queue.poll();
+            } else {
+                continue;
             }
-        } catch (InterruptedException ex) {
-            Logger.getLogger(ClientThread.class.getName()).log(Level.SEVERE, null, ex);
+            if (uri == null) {
+                continue;
+            }
+            if(uri.equals("EOF")){ 
+                isDone.set(true);
+                break;
+            }
+            webResource = client.target(uri);
+            long start = System.currentTimeMillis();
+            doPost(webResource);
+            long latency = System.currentTimeMillis() - start;
+            latencies.add(latency);
+            requestCount++;
+            //start = System.currentTimeMillis();
+            //doPost(webResource);
+            //latency = System.currentTimeMillis() - start;
+            //latencies.add(latency);
+            //requestCount++;
         }
-        System.out.println("Fin");
+
         try {
             barrier.await();
         } catch (InterruptedException | BrokenBarrierException ex) {
@@ -80,7 +83,7 @@ public class ClientThread implements Runnable {
                         "Failed: HTTP post error: " + postResp.getStatus());
             }
             String str = postResp.readEntity(String.class);
-            System.out.println("do post: " + str + ", id: " + Thread.currentThread().getId());
+            //System.out.println("do post: " + str + ", id: " + Thread.currentThread().getId());
             successCount++;
             postResp.close();
         } catch (Exception e) {
