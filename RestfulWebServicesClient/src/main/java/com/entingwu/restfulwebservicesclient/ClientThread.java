@@ -1,5 +1,7 @@
 package com.entingwu.restfulwebservicesclient;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BrokenBarrierException;
@@ -18,17 +20,19 @@ import javax.ws.rs.core.Response;
 
 public class ClientThread implements Runnable {
     
-    private ConcurrentLinkedQueue<String> queue;
+    private ConcurrentLinkedQueue<Record> queue;
     private CyclicBarrier barrier;
     private AtomicBoolean isDone;
+    private String uri;
     private long requestCount;
     private long successCount;
     private List<Long> latencies = new ArrayList<>();
     
     
-    public ClientThread(ConcurrentLinkedQueue<String> queue, CyclicBarrier barrier, 
-            AtomicBoolean isDone) {
+    public ClientThread(ConcurrentLinkedQueue<Record> queue, String uri, 
+            CyclicBarrier barrier, AtomicBoolean isDone) {
         this.queue = queue;
+        this.uri = uri;
         this.barrier = barrier;
         this.isDone = isDone;
     }
@@ -36,24 +40,20 @@ public class ClientThread implements Runnable {
     @Override
     public void run() {
         Client client = ClientBuilder.newClient();
-        WebTarget webResource;
         while(!isDone.get()) {
-            String uri = null;
+            Record record = null;
             if (!queue.isEmpty()) {
-                uri = queue.poll();
+                record = queue.poll();
             } else {
                 continue;
             }
-            if (uri == null) {
-                continue;
-            }
-            if(uri.equals("EOF")){ 
+            if (record == null) {
                 isDone.set(true);
                 break;
             }
-            webResource = client.target(uri);
+            
             long start = System.currentTimeMillis();
-            doPost(webResource);
+            doPost(client, record, uri);
             long latency = System.currentTimeMillis() - start;
             latencies.add(latency);
             requestCount++;
@@ -74,19 +74,20 @@ public class ClientThread implements Runnable {
         client.close();
     }
      
-    private void doPost(WebTarget target) {
+    private void doPost(Client client, Record record, String uri) {
         try {
+            URL url = new URL("http", "localhost", 9090, "/RestfulWebServices/rest/load");
+            System.out.println(url.toString());
+            WebTarget target = client.target(url.toString());
             Response postResp = target.request()
-                .post(Entity.entity("record", MediaType.TEXT_PLAIN));
+                .post(Entity.json(record));
             if (postResp.getStatus() != 200) {
                 throw new RuntimeException(
                         "Failed: HTTP post error: " + postResp.getStatus());
             }
-            String str = postResp.readEntity(String.class);
-            //System.out.println("do post: " + str + ", id: " + Thread.currentThread().getId());
             successCount++;
             postResp.close();
-        } catch (Exception e) {
+        } catch (RuntimeException | MalformedURLException e) {
             e.printStackTrace();
         }
     }

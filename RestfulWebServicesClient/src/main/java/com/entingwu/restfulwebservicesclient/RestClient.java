@@ -1,14 +1,10 @@
 package com.entingwu.restfulwebservicesclient;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -27,7 +23,7 @@ public class RestClient {
             + "src/main/resources/BSDSAssignment2Day1.csv";
     private static final String SERVER_URI = 
             "http://localhost:9090/RestfulWebServices/rest/";
-    protected ConcurrentLinkedQueue<String> queue = null;
+    protected ConcurrentLinkedQueue<Record> queue = null;
     private AtomicBoolean isDone = new AtomicBoolean(false);
     
     private static int threadNum = 10;
@@ -45,10 +41,11 @@ public class RestClient {
         queue = new ConcurrentLinkedQueue<>();
         executor = getExecutor(threadNum);
         barrier = new CyclicBarrier(threadNum);
+
         Thread reader = new Thread(new Runnable() {
             @Override
             public void run() {
-                readFile(queue);
+                 DataReader.readFile(queue);
             }
         });
         reader.start();
@@ -58,7 +55,7 @@ public class RestClient {
         
         List<Future> futures = new ArrayList<>();
         for (int i = 0; i < threadNum; i++) {
-            ClientThread thread = new ClientThread(queue, barrier, isDone);
+            ClientThread thread = new ClientThread(queue, SERVER_URI, barrier, isDone);
             threads.add(thread);
             Future future = executor.submit(thread);
             futures.add(future);
@@ -75,33 +72,6 @@ public class RestClient {
         executor.shutdown();
         System.out.println("All threads complete... Time: " + getDate());
         return System.currentTimeMillis() - start;
-    }
-    
-    private void readFile(ConcurrentLinkedQueue<String> queue){
-        String line, postUri;
-        BufferedReader br = null;
-        int i = 0;
-        try {
-            br = new BufferedReader(new FileReader(FILE_NAME));
-            while ((line = br.readLine()) != null) {
-                if (i > 0 && i < 30) {
-                    String[] strs = line.split(",");
-                    if (strs.length >= 5) {
-                        //postUri = SERVER_URI
-                        postUri = remoteUri
-                            + "load/" + strs[0] + "&" + strs[1] + "&" + strs[4] 
-                            + "&" + strs[3] + "&" + strs[2];
-                        queue.offer(postUri);
-                    }
-                    
-                }
-                i++;
-            }
-            queue.offer("EOF");
-            br.close();
-        } catch (IOException ex) {
-            Logger.getLogger(REST_CLIENT).log(Level.SEVERE, null, ex);
-        }
     }
     
     private static String getServerAddress(String ip, String port) {

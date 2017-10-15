@@ -1,6 +1,6 @@
 package com.entingwu.jersey;
 
-import com.entingwu.jersey.model.RFIDLiftData;
+import com.entingwu.jersey.model.Record;
 import java.util.HashMap;
 import java.util.Map;
 import javax.ws.rs.Consumes;
@@ -9,12 +9,14 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 @Path("/")
+//@Produces(MediaType.APPLICATION_JSON)
 public class RestServer {
     
-    private static Map<String, RFIDLiftData> map = new HashMap<>();
+    private static Map<String, Record> map = new HashMap<>();
     
     @GET
     @Path("/{myvert}/{skierID}&{dayNum}")
@@ -27,7 +29,7 @@ public class RestServer {
         String vertical = myvert;
         String liftNum = "0";
         if (map.containsKey(skierID)) {
-            RFIDLiftData data = map.get(skierID);
+            Record data = map.get(skierID);
             liftNum = String.valueOf(data.getLiftID());
         }
         String str = new StringBuilder()
@@ -39,30 +41,11 @@ public class RestServer {
     }
     
     @POST
-    @Path("/load/{resortID}&{dayNum}&{timestamp}&{skierID}&{liftID}")
-    @Produces(value = "text/plain")
-    public Response postData(
-            @PathParam("resortID") String resortID,
-            @PathParam("dayNum") String dayNum,
-            @PathParam("timestamp") String timestamp,
-            @PathParam("skierID") String skierID,
-            @PathParam("liftID") String liftID) {
-        RFIDLiftData data = new RFIDLiftData(
-                Integer.parseInt(resortID), 
-                Integer.parseInt(dayNum), 
-                Integer.parseInt(skierID), 
-                Integer.parseInt(liftID), 
-                Integer.parseInt(timestamp));
-        if (!map.containsKey(skierID)) {
-            map.put(skierID, data);
-        }
-        String str = new StringBuilder()
-                .append(resortID)
-                .append(dayNum)
-                .append(timestamp)
-                .append(skierID)
-                .append(liftID)
-                .toString();
-        return Response.status(200).entity(str).build();
+    @Path("/load")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Record postData(Record record) {
+        System.out.println(record.toString());
+        return record;
     }
 }
