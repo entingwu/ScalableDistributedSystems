@@ -15,6 +15,8 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
+import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.client.ClientProperties;
 
 public class ClientThread implements Runnable {
     
@@ -26,8 +28,7 @@ public class ClientThread implements Runnable {
     private long requestCount;
     private long successCount;
     private List<Long> latencies = new ArrayList<>();
-    
-    
+      
     public ClientThread(ConcurrentLinkedQueue<Record> queue, String uri, 
             CyclicBarrier barrier, AtomicBoolean isDone) {
         this.queue = queue;
@@ -38,7 +39,10 @@ public class ClientThread implements Runnable {
     
     @Override
     public void run() {
-        Client client = ClientBuilder.newClient();
+        ClientConfig configuration = new ClientConfig();
+        configuration.property(ClientProperties.CONNECT_TIMEOUT, 10000);
+        configuration.property(ClientProperties.READ_TIMEOUT, 10000);
+        Client client = ClientBuilder.newClient(configuration);
         while(!isDone.get()) {
             Record record = null;
             if (!queue.isEmpty()) {
@@ -46,7 +50,8 @@ public class ClientThread implements Runnable {
             } else {
                 continue;
             }
-            if (record == null) {
+            if (record.flag) {
+                System.out.println("Distributed file system done");
                 isDone.set(true);
                 break;
             }
@@ -75,7 +80,7 @@ public class ClientThread implements Runnable {
      
     private void doPost(Client client, Record record, String uri) {
         String postUrl = uri + "/load";
-        System.out.println(postUrl);
+        //System.out.println(postUrl);
         try {
             WebTarget target = client.target(postUrl);
             Response response = target.request()
@@ -92,7 +97,7 @@ public class ClientThread implements Runnable {
     private void doGet(Client client, Record record, String uri) {
         String getUrl = uri + "/myvert/" + 
                 record.getSkierID() + "&" + record.getDayNum();
-        System.out.println(getUrl);
+        //System.out.println(getUrl);
         try {
             WebTarget target = client.target(getUrl);
             Response response = target.request().get();

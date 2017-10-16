@@ -7,6 +7,7 @@ public class Record  {
     private String skierID;
     private String liftID;
     private String time;
+    public boolean flag = false;
 
     public Record(String resortID, int dayNum, String skierID, String liftID, String time) {
         this.resortID = resortID;

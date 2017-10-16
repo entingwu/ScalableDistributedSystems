@@ -20,7 +20,7 @@ public class DataReader {
         try {
             br = new BufferedReader(new FileReader(FILE_NAME));
             while ((line = br.readLine()) != null) {
-                if (i > 0 && i < 20) {
+                if (i > 0 && i < 401) {
                     String[] strs = line.split(",");
                     String resortID = strs[0];
                     int dayNum = Integer.parseInt(strs[1]);
@@ -33,6 +33,10 @@ public class DataReader {
                 }
                 i++;
             }
+            Record r = new Record();
+            r.flag = true;
+            queue.offer(r);
+            System.out.println("Pushed in the eof");
             br.close();
         } catch (IOException ex) {
             Logger.getLogger(DataReader.class.getName()).log(Level.SEVERE, null, ex);

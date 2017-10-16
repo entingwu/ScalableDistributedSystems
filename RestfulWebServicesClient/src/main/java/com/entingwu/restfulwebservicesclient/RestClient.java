@@ -18,12 +18,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class RestClient {
     
     private static final String REST_CLIENT = RestClient.class.getName();
-    private static final String LOCAL_URI = 
-            "http://localhost:9090/RestfulWebServices/rest";
+//    private static final String LOCAL_URI = 
+//            "http://localhost:9090/RestfulWebServices/rest";
     private static String ip = "35.167.118.155";
     private static String port = "8080";
     private static String remoteUri = getServerAddress(ip, port);
-    private static int threadNum = 10;
+    private static int threadNum = 200;
     
     protected ConcurrentLinkedQueue<Record> queue = null;
     private AtomicBoolean isDone = new AtomicBoolean(false);
@@ -56,7 +56,7 @@ public class RestClient {
             Future future = executor.submit(thread);
             futures.add(future);
         }
-        
+         
         for (Future future : futures) {
             try {
                 future.get();
