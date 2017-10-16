@@ -1,2 +1,5 @@
+com/entingwu/jersey/jdbc/TestJDBC.class
+com/entingwu/jersey/jdbc/RecordDAO.class
+com/entingwu/jersey/jdbc/ConnectUtils.class
 com/entingwu/jersey/model/Record.class
 com/entingwu/jersey/RestServer.class
