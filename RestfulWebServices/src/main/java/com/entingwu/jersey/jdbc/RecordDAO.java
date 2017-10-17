@@ -28,7 +28,7 @@ public class RecordDAO {
         return instance;
     }
     
-    public Record findRecordByFilter(String skierID, int dayNum) {
+    public Record findRecordByFilter(String skierID, String dayNum) {
         String stmt = "SELECT * FROM " + TABLE + " WHERE skier_id = ? and day_num = ?";
         Connection connection = null;
         PreparedStatement selectStmt = null;
@@ -38,16 +38,17 @@ public class RecordDAO {
         try {
             connection = ConnectUtils.getConnection();
             selectStmt = connection.prepareStatement(stmt);
-            selectStmt.setInt(2, dayNum);
-            selectStmt.setString(3, skierID);
+            selectStmt.setString(1, skierID);
+            selectStmt.setString(2, dayNum);
             results = selectStmt.executeQuery();
             while (results.next()) {
-                record = new Record(results.getString(1), 
-                        Integer.parseInt(results.getString(2)), 
+                record = new Record(
+                        results.getString(1), 
+                        results.getString(2), 
                         results.getString(3), 
                         results.getString(4), 
-                        results.getString(5));
-                System.out.println(record.toString());
+                        results.getString(5), 
+                        results.getString(6));
             }
             selectStmt.close();
         } catch (SQLException ex) {
@@ -91,7 +92,7 @@ public class RecordDAO {
             connection = ConnectUtils.getConnection();
             insertStmt = connection.prepareStatement(stmt);
             insertStmt.setString(1, record.getResortID());
-            insertStmt.setInt(2, record.getDayNum());
+            insertStmt.setString(2, record.getDayNum());
             insertStmt.setString(3, record.getSkierID());
             insertStmt.setString(4, record.getLiftID());
             insertStmt.setString(5, record.getTime());
@@ -114,7 +115,6 @@ public class RecordDAO {
     
     public void cleanUp() {
         String deleteStmt = "DELETE FROM TABLE " + TABLE;
-        //String dropStmt = "DROP TABLE IF EXISTS " + TABLE;
         Connection connection = null;
         PreparedStatement prepareStmt = null;
         

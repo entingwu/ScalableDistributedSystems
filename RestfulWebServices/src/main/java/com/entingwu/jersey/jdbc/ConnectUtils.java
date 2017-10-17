@@ -28,9 +28,6 @@ public class ConnectUtils {
         } catch (SQLException ex) {
             Logger.getLogger(CONNECTION_MANAGER).log(Level.SEVERE, null, ex);
         }
-        if (connection != null) {
-            System.out.println("postgre success");
-        }
         return connection;
     }
     

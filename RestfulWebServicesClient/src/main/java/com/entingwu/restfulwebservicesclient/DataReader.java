@@ -22,13 +22,8 @@ public class DataReader {
             while ((line = br.readLine()) != null) {
                 if (i > 0 && i < 21) {
                     String[] strs = line.split(",");
-                    String resortID = strs[0];
-                    int dayNum = Integer.parseInt(strs[1]);
-                    String skierId = strs[2];
-                    String liftId = strs[3];
-                    String timestamp = strs[4];
                     Record record = new Record(
-                            resortID, dayNum, skierId, liftId, timestamp);
+                            strs[0], strs[1], strs[2], strs[3], strs[4]);
                     queue.offer(record);                  
                 }
                 i++;

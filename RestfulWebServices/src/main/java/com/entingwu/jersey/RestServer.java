@@ -20,7 +20,9 @@ public class RestServer {
             @PathParam("skierID") String skierID,
             @PathParam("dayNum") String dayNum) {
         RecordDAO dao = RecordDAO.getRecordDAO();
-        return dao.findRecordByFilter(skierID, Integer.parseInt(dayNum));
+        Record record = dao.findRecordByFilter(skierID, dayNum);
+        System.out.println("get: " + record.toString());
+        return record;
     }
     
     @POST

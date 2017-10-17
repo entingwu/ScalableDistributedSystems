@@ -57,16 +57,16 @@ public class ClientThread implements Runnable {
             }
             
             long start = System.currentTimeMillis();
-            doPost(client, record, uri);
+            //doPost(client, record, uri);
             long latency = System.currentTimeMillis() - start;
-            latencies.add(latency);
-            requestCount++;
-            
-            //start = System.currentTimeMillis();
-            //doGet(client, record, uri);
-            //latency = System.currentTimeMillis() - start;
             //latencies.add(latency);
             //requestCount++;
+            
+            start = System.currentTimeMillis();
+            doGet(client, record, uri);
+            latency = System.currentTimeMillis() - start;
+            latencies.add(latency);
+            requestCount++;
         }
 
         try {

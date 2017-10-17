@@ -3,13 +3,13 @@ package com.entingwu.restfulwebservicesclient;
 public class Record  {
     
     private String resort_id;
-    private int day_num;
+    private String day_num;
     private String skier_id;
     private String lift_id;
     private String timestamp;
     public boolean flag = false;
 
-    public Record(String resort_id, int day_num, String skier_id, 
+    public Record(String resort_id, String day_num, String skier_id, 
             String lift_id, String timestamp) {
         this.resort_id = resort_id;
         this.day_num = day_num;
@@ -28,11 +28,11 @@ public class Record  {
         this.resort_id = resort_id;
     }
 
-    public int getDayNum() {
+    public String getDayNum() {
         return day_num;
     }
 
-    public void setDayNum(int day_num) {
+    public void setDayNum(String day_num) {
         this.day_num = day_num;
     }
 

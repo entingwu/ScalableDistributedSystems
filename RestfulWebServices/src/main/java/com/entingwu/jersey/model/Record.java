@@ -4,14 +4,14 @@ public class Record  {
     
     private String id;
     private String resort_id;
-    private int day_num;
+    private String day_num;
     private String skier_id;
     private String lift_id;
     private String timestamp;
     
     public Record() {}
     
-    public Record(String resort_id, int day_num, String skier_id, 
+    public Record(String resort_id, String day_num, String skier_id, 
             String lift_id, String timestamp) {
         this.resort_id = resort_id;
         this.day_num = day_num;
@@ -20,7 +20,7 @@ public class Record  {
         this.timestamp = timestamp;
     }
     
-    public Record(String id, String resort_id, int day_num, String skier_id, 
+    public Record(String id, String resort_id, String day_num, String skier_id, 
             String lift_id, String timestamp) {
         this.id = id;
         this.resort_id = resort_id;
@@ -38,11 +38,11 @@ public class Record  {
         this.resort_id = resort_id;
     }
 
-    public int getDayNum() {
+    public String getDayNum() {
         return day_num;
     }
 
-    public void setDayNum(int day_num) {
+    public void setDayNum(String day_num) {
         this.day_num = day_num;
     }
 
@@ -72,7 +72,7 @@ public class Record  {
     
     @Override
     public String toString() {
-        return "id = " + id + "resortID = " + resort_id + 
+        return "id = " + id + ", resortID = " + resort_id + 
                 ", dayNum = " + day_num + ", skierID = " + skier_id + 
                 ", liftID = " + lift_id + ", timestamp = " + timestamp;
     }
