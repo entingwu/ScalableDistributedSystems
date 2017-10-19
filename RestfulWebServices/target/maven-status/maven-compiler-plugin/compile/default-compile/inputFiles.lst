@@ -3,3 +3,4 @@
 /Users/entingwu/NetBeansProjects/RestfulWebServices/src/main/java/com/entingwu/jersey/model/Record.java
 /Users/entingwu/NetBeansProjects/RestfulWebServices/src/main/java/com/entingwu/jersey/jdbc/RecordDAO.java
 /Users/entingwu/NetBeansProjects/RestfulWebServices/src/main/java/com/entingwu/jersey/RestServer.java
+/Users/entingwu/NetBeansProjects/RestfulWebServices/src/main/java/com/entingwu/jersey/model/SkiMetric.java

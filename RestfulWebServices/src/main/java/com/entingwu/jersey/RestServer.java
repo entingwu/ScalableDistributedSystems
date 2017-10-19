@@ -32,7 +32,7 @@ public class RestServer {
     public Record postData(Record record) {
         System.out.println("post: " + record.toString());
         RecordDAO dao = RecordDAO.getRecordDAO();
-        dao.insertRecord(record);
+        dao.insert(record);
         return record;
     }
 }

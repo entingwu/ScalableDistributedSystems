@@ -2,64 +2,70 @@ package com.entingwu.jersey.model;
 
 public class Record  {
     
+    private static final int[] VERTICAL = {200, 300, 400, 500};
     private String id;
-    private String resort_id;
-    private String day_num;
-    private String skier_id;
-    private String lift_id;
+    private String resortId;
+    private String dayNum;
+    private String skierId;
+    private int liftId;
     private String timestamp;
     
     public Record() {}
     
-    public Record(String resort_id, String day_num, String skier_id, 
-            String lift_id, String timestamp) {
-        this.resort_id = resort_id;
-        this.day_num = day_num;
-        this.skier_id = skier_id;
-        this.lift_id = lift_id;
+    public Record(String resortId, String dayNum, String skierId, 
+            int liftId, String timestamp) {
+        this.resortId = resortId;
+        this.dayNum = dayNum;
+        this.skierId = skierId;
+        this.liftId = liftId;
         this.timestamp = timestamp;
     }
     
-    public Record(String id, String resort_id, String day_num, String skier_id, 
-            String lift_id, String timestamp) {
+    public Record(String id, String resortId, String dayNum, String skierId, 
+            int liftId, String timestamp) {
         this.id = id;
-        this.resort_id = resort_id;
-        this.day_num = day_num;
-        this.skier_id = skier_id;
-        this.lift_id = lift_id;
+        this.resortId = resortId;
+        this.dayNum = dayNum;
+        this.skierId = skierId;
+        this.liftId = liftId;
         this.timestamp = timestamp;
+    }
+    
+    public int getVertical() {
+        int index = (liftId - 1) / 10;
+        return VERTICAL[index];
     }
 
     public String getResortID() {
-        return resort_id;
+        return resortId;
     }
 
-    public void setResortID(String resort_id) {
-        this.resort_id = resort_id;
+    public void setResortID(String resortId) {
+        this.resortId = resortId;
     }
 
     public String getDayNum() {
-        return day_num;
+        return dayNum;
     }
 
-    public void setDayNum(String day_num) {
-        this.day_num = day_num;
+    public void setDayNum(String dayNum) {
+        this.dayNum = dayNum;
     }
 
     public String getSkierID() {
-        return skier_id;
+        return skierId;
     }
 
-    public void setSkierID(String skier_id) {
-        this.skier_id = skier_id;
+    public void setSkierID(String skierId) {
+        this.skierId = skierId;
     }
 
-    public String getLiftID() {
-        return lift_id;
+    public int getLiftID() {
+        return liftId;
     }
 
-    public void setLiftID(String lift_id) {
-        this.lift_id = lift_id;
+    public void setLiftID(int liftId) {
+        this.liftId = liftId;
     }
 
     public String getTime() {
@@ -72,8 +78,8 @@ public class Record  {
     
     @Override
     public String toString() {
-        return "id = " + id + ", resortID = " + resort_id + 
-                ", dayNum = " + day_num + ", skierID = " + skier_id + 
-                ", liftID = " + lift_id + ", timestamp = " + timestamp;
+        return "id = " + id + ", resortID = " + resortId + 
+                ", dayNum = " + dayNum + ", skierID = " + skierId + 
+                ", liftID = " + liftId + ", timestamp = " + timestamp;
     }
 }

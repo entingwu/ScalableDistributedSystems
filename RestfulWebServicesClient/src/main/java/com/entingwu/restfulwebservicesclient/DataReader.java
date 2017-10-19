@@ -20,10 +20,10 @@ public class DataReader {
         try {
             br = new BufferedReader(new FileReader(FILE_NAME));
             while ((line = br.readLine()) != null) {
-                if (i > 0 && i < 21) {
+                if (i > 0 && i < 41) {
                     String[] strs = line.split(",");
                     Record record = new Record(
-                            strs[0], strs[1], strs[2], strs[3], strs[4]);
+                            strs[0], strs[1], strs[2], Integer.parseInt(strs[3]), strs[4]);
                     queue.offer(record);                  
                 }
                 i++;

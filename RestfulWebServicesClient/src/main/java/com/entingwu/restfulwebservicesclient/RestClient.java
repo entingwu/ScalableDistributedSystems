@@ -105,7 +105,6 @@ public class RestClient {
 
     public static void main(String[] args) {
         // 10 35.167.118.155 8080
-        System.out.println("thread_num server_ip server_port");
         if (args.length == 3) {
             threadNum = Integer.parseInt(args[0]);
             ip = args[1];

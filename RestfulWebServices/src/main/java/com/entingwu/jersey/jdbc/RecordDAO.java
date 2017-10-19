@@ -47,7 +47,7 @@ public class RecordDAO {
                         results.getString(2), 
                         results.getString(3), 
                         results.getString(4), 
-                        results.getString(5), 
+                        results.getInt(5), 
                         results.getString(6));
             }
             selectStmt.close();
@@ -80,7 +80,7 @@ public class RecordDAO {
         }
     }
     
-    public long insertRecord(Record record) {
+    public long insert(Record record) {
         String stmt = "INSERT INTO " + TABLE + 
         "(resort_id, day_num, skier_id, lift_id, timestamp)  " +
         "VALUES (?, ?, ?, ?, ?);";
@@ -94,7 +94,7 @@ public class RecordDAO {
             insertStmt.setString(1, record.getResortID());
             insertStmt.setString(2, record.getDayNum());
             insertStmt.setString(3, record.getSkierID());
-            insertStmt.setString(4, record.getLiftID());
+            insertStmt.setInt(4, record.getLiftID());
             insertStmt.setString(5, record.getTime());
             int affectedRows = insertStmt.executeUpdate();
             if (affectedRows > 0) {

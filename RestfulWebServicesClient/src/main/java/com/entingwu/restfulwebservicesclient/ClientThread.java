@@ -39,10 +39,11 @@ public class ClientThread implements Runnable {
     
     @Override
     public void run() {
-        ClientConfig configuration = new ClientConfig();
-        configuration.property(ClientProperties.CONNECT_TIMEOUT, 10000);
-        configuration.property(ClientProperties.READ_TIMEOUT, 10000);
-        Client client = ClientBuilder.newClient(configuration);
+        //ClientConfig configuration = new ClientConfig();
+        //configuration.property(ClientProperties.CONNECT_TIMEOUT, 10000);
+        //configuration.property(ClientProperties.READ_TIMEOUT, 10000);
+        //Client client = ClientBuilder.newClient(configuration);
+        Client client = ClientBuilder.newClient();
         while(!isDone.get()) {
             Record record = null;
             if (!queue.isEmpty()) {
@@ -57,16 +58,16 @@ public class ClientThread implements Runnable {
             }
             
             long start = System.currentTimeMillis();
-            //doPost(client, record, uri);
+            doPost(client, record, uri);
             long latency = System.currentTimeMillis() - start;
-            //latencies.add(latency);
-            //requestCount++;
-            
-            start = System.currentTimeMillis();
-            doGet(client, record, uri);
-            latency = System.currentTimeMillis() - start;
             latencies.add(latency);
             requestCount++;
+            
+            //start = System.currentTimeMillis();
+            //doGet(client, record, uri);
+            //latency = System.currentTimeMillis() - start;
+            //latencies.add(latency);
+            //requestCount++;
         }
 
         try {
@@ -87,6 +88,7 @@ public class ClientThread implements Runnable {
                 .post(Entity.json(record));
             if (response.getStatus() == HTTP_OK) {
                 successCount++;
+                System.out.println(response.getEntity().toString());
             }
             response.close();
         } catch (ProcessingException e) {
