@@ -29,10 +29,10 @@ public class RestServer {
     @Path("/load")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Record postData(Record record) {
-        System.out.println("post: " + record.toString());
+    public String postData(Record record) {
+        System.out.println("post: " + record.getSkierID());
         RecordDAO dao = RecordDAO.getRecordDAO();
         dao.insert(record);
-        return record;
+        return record.toString();
     }
 }
