@@ -10,27 +10,13 @@ public class SkiMetric  {
     
     public SkiMetric() {}
     
-    public SkiMetric(String skierId, String dayNum, int totalVertical, 
-            int liftNum) {
-        this.skierId = skierId;
-        this.dayNum = dayNum;
-        this.totalVertical = totalVertical;
-        this.liftNum = liftNum;
-    }
-    
-    public SkiMetric(String id, String skierId, String dayNum, 
+    public SkiMetric(String skierId, String dayNum, 
             int totalVertical, int liftNum) {
         this.id = id;
         this.skierId = skierId;
         this.dayNum = dayNum;
         this.totalVertical = totalVertical;
         this.liftNum = liftNum;
-    }
-    
-    public SkiMetric update(Record record) {
-        liftNum++;
-        totalVertical += record.getVertical();
-        return this;
     }
 
     public String getSkierID() {

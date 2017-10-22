@@ -21,7 +21,7 @@ public class DataReader {
         try {
             br = new BufferedReader(new FileReader(FILE_NAME));
             while ((line = br.readLine()) != null) {
-                if (i > 0 && i < 6) {
+                if (i > 0 && i < 51) {
                     String[] strs = line.split(",");
                     Record record = new Record(
                             strs[0], strs[1], strs[2], 

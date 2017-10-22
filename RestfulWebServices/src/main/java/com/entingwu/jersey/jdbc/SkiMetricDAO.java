@@ -30,7 +30,7 @@ public class SkiMetricDAO {
     }
     
     // get
-    public SkiMetric findSkiMetricByFilter(String skierID, String dayNum) 
+    /*public SkiMetric findSkiMetricByFilter(String skierID, String dayNum) 
             throws SQLException {
         String stmt = "SELECT * FROM " + SKI_METRIC_TABLE + " WHERE skier_id = ? and day_num = ?";
         Connection connection = null;
@@ -61,9 +61,9 @@ public class SkiMetricDAO {
             }
         }
         return skiMetric;
-    }
+    }*/
     
-    //update
+    //upsert
     public void upsertSkiMetric(Record record) {
         String stmt = "INSERT INTO skimetrics(id, skier_id, day_num, "
                 + "total_vertical, lift_num) VALUES(?,?,?,?,?) " + 
@@ -71,19 +71,20 @@ public class SkiMetricDAO {
                 "total_vertical = skimetrics.total_vertical + EXCLUDED.total_vertical, " +
                 "lift_num = skimetrics.lift_num + EXCLUDED.lift_num";
         Connection connection = null;
-        PreparedStatement insertStmt = null;
+        PreparedStatement upsertStmt = null;
         long id = 0;
         
         try {
             connection = ConnectUtils.getConnection();
-            insertStmt = connection.prepareStatement(stmt);
-            insertStmt.setString(1, record.getSkierID());
-            insertStmt.setString(2, record.getDayNum());
-            insertStmt.setInt(3, record.getVertical());
-            insertStmt.setInt(4, 1);
-            int affectedRows = insertStmt.executeUpdate();
+            upsertStmt = connection.prepareStatement(stmt);
+            upsertStmt.setString(1, record.getSkierID() + "&" + record.getDayNum());
+            upsertStmt.setString(2, record.getSkierID());
+            upsertStmt.setString(3, record.getDayNum());
+            upsertStmt.setInt(4, record.getVertical());
+            upsertStmt.setInt(5, 1);
+            int affectedRows = upsertStmt.executeUpdate();
             if (affectedRows > 0) {
-                try (ResultSet rs = insertStmt.getGeneratedKeys()) {
+                try (ResultSet rs = upsertStmt.getGeneratedKeys()) {
                     if (rs.next()) {
                         id = rs.getLong(1);
                     }
@@ -91,14 +92,14 @@ public class SkiMetricDAO {
                     Logger.getLogger(SKI_METRIC_DAO).log(Level.SEVERE, null, ex);
                 }
             }
-            insertStmt.close();
+            upsertStmt.close();
         } catch (SQLException ex) {
             Logger.getLogger(SKI_METRIC_DAO).log(Level.SEVERE, null, ex);
         }  
     }
-    
+
     // post
-    public long findSkiMetric(Record record) throws SQLException {
+    /*public long findSkiMetric(Record record) throws SQLException {
         String stmt = "SELECT * FROM " + SKI_METRIC_TABLE + 
         " WHERE skier_id = ? and day_num = ?";
         Connection connection = null;
@@ -111,18 +112,19 @@ public class SkiMetricDAO {
             selectStmt.setString(1, record.getSkierID());
             selectStmt.setString(2, record.getDayNum());
             results = selectStmt.executeQuery();
-            if (results != null) {
-                SkiMetric skiRecord = null;
-                while (results.next()) {
-                    skiRecord = new SkiMetric(
-                            results.getString(1), 
-                            results.getString(2), 
-                            results.getString(3), 
-                            results.getInt(4), 
-                            results.getInt(5));
-                }
-                //updateSkiMetric(connection, record, skiRecord);
-                insertSkiMetric(connection, record);
+            boolean isEmpty = true;
+            SkiMetric skiRecord = null;
+            while (results.next()) {
+                isEmpty = false;
+                skiRecord = new SkiMetric(
+                        results.getString(1), 
+                        results.getString(2), 
+                        results.getString(3), 
+                        results.getInt(4), 
+                        results.getInt(5));
+            }
+            if (!isEmpty) {
+                updateSkiMetric(connection, record, skiRecord);
             } else {
                 insertSkiMetric(connection, record);
             }
@@ -139,7 +141,7 @@ public class SkiMetricDAO {
 
     public long updateSkiMetric(Connection connection, Record record, SkiMetric skiRecord) {
         String stmt = "UPDATE " + SKI_METRIC_TABLE + 
-        " SET total_vert = ?, " + " SET lift_num = ?" + 
+        " SET total_vertical = ?, " + " lift_num = ?" + 
         " WHERE skier_id = ? AND day_num = ?";
         PreparedStatement updateStmt = null;
         long id = 0;
@@ -195,7 +197,7 @@ public class SkiMetricDAO {
             Logger.getLogger(SKI_METRIC_DAO).log(Level.SEVERE, null, ex);
         }
         return id;        
-    }
+    }*/
     
     public void cleanUp() {
         String deleteStmt = "DELETE FROM TABLE " + SKI_METRIC_TABLE;

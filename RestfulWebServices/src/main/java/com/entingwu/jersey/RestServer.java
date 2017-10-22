@@ -23,9 +23,10 @@ public class RestServer {
             @PathParam("skierID") String skierID,
             @PathParam("dayNum") String dayNum) throws SQLException {
         SkiMetricDAO skiMetricDAO = SkiMetricDAO.getSkiMetricDAO();
-        SkiMetric skiMetric = skiMetricDAO.findSkiMetricByFilter(skierID, dayNum); 
-        System.out.println("get: " + skiMetric.toString());
-        return skiMetric.toString();
+        //SkiMetric skiMetric = skiMetricDAO.findSkiMetricByFilter(skierID, dayNum); 
+        //System.out.println("get: " + skiMetric.toString());
+        //return skiMetric.toString();
+        return "";
     }
     
     @POST
@@ -37,7 +38,7 @@ public class RestServer {
         RecordDAO dao = RecordDAO.getRecordDAO();
         dao.insert(record);
         SkiMetricDAO skiMetricDAO = SkiMetricDAO.getSkiMetricDAO();
-        skiMetricDAO.findSkiMetric(record);
+        skiMetricDAO.upsertSkiMetric(record);
         return record.toString();
     }
 }
