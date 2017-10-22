@@ -2,7 +2,6 @@ package com.entingwu.restfulwebservicesclient;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 
 public class MetricUtils {
@@ -18,23 +17,23 @@ public class MetricUtils {
     public void add(Metrics metrics) {
         successCount += metrics.getSuccessCount();
         requestCount += metrics.getRequestCount();
-        totalLatency += metrics.getTotalLatency();
-        latencies.add(metrics.getTotalLatency());
+        latencies.addAll(metrics.getLatencies());       
     }
 
     public void getMetrics() {
-        long[] latencyArray = new long[requestCount];
-        int i = 0;
-        for (long latency : latencies) {
-            latencyArray[i++] = latency;
+        int size = latencies.size();
+        Object[] latencyArrayObj = latencies.toArray();
+        long[] latencyArray = new long[size];
+        for (int i = 0; i < size; ++i) {
+            latencyArray[i] = (long)latencyArrayObj[i];
+            totalLatency += latencyArray[i];        
         }
-        
-        latencies.sort(Comparator.naturalOrder());
+
         Arrays.sort(latencyArray);
         double meanLatency = getMeanLatency();
-        double medianLatency = getMedianLatency(latencyArray, requestCount);
-        long p99Latency = latencyArray[(int)(requestCount * 0.99 - 1)];
-        long p95Latency = latencyArray[(int)(requestCount * 0.95 - 1)];
+        double medianLatency = getMedianLatency(latencyArray, size);
+        long p99Latency = latencyArray[(int)(size * 0.99) - 1];
+        long p95Latency = latencyArray[(int)(size * 0.95) - 1];
         print(meanLatency, medianLatency, p99Latency, p95Latency);
     }
     

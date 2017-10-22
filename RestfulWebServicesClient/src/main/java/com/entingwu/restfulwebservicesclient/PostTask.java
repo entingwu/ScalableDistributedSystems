@@ -18,16 +18,16 @@ public class PostTask implements Callable<Metrics> {
         
     private final int start;
     private final int end;
-    private final List<Record> records;
+    private final List<RFIDLiftData> records;
     private final String uri;
     private Metrics metrics;
     private static AtomicInteger counter = new AtomicInteger();
     
-    public PostTask(int start, int end, List<Record> records, String uri) {
+    public PostTask(int start, int end, List<RFIDLiftData> records, String uri) {
         this.start = start;
         this.end = end;
         this.records = records;
-        this.uri = uri;
+        this.uri = uri + "/load";
         this.metrics = new Metrics();
     }
     
@@ -41,7 +41,7 @@ public class PostTask implements Callable<Metrics> {
         return metrics;
     }
     
-    private void doPost(Client client, Record record) throws MalformedURLException {
+    private void doPost(Client client, RFIDLiftData record) throws MalformedURLException {
         long startTime = System.currentTimeMillis();
         WebTarget webTarget = client.target(uri);
         boolean isSent = false, isSuccess = false;

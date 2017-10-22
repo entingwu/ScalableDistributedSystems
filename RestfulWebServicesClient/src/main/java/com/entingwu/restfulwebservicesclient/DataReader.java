@@ -14,19 +14,19 @@ public class DataReader {
             "/Users/entingwu/NetBeansProjects/RestfulWebServicesClient/"
             + "src/main/resources/BSDSAssignment2Day1.csv";
     
-    public static void readFile(List<Record> records) {
+    public static void readFile(List<RFIDLiftData> dataList) {
         String line;
         BufferedReader br = null;
         int i = 0;
         try {
             br = new BufferedReader(new FileReader(FILE_NAME));
             while ((line = br.readLine()) != null) {
-                if (i > 0 && i < 51) {
+                if (i > 0 && i < 201) {
                     String[] strs = line.split(",");
-                    Record record = new Record(
+                    RFIDLiftData record = new RFIDLiftData(
                             strs[0], strs[1], strs[2], 
                             Integer.parseInt(strs[3]), strs[4]);
-                    records.add(record); 
+                    dataList.add(record); 
                 }
                 i++;
             }

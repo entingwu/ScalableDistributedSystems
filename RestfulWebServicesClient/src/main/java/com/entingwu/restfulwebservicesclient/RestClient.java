@@ -18,50 +18,52 @@ public class RestClient {
     private static String port = "8080";
     private static String REMOTE_URI = getServerAddress(ip, port);
     private static int threadNum = 32;
-    protected List<Record> recordList = null;
+    protected List<RFIDLiftData> dataList = null;
 
     public void clientProcessing(int threadNum, String ip, String port) 
             throws Exception {
-        recordList = new ArrayList<>();
+        dataList = new ArrayList<>();
         // 1. Read records from .csv
         Thread reader = new Thread(new Runnable() {
             @Override
             public void run() {
-                 DataReader.readFile(recordList);
+                 DataReader.readFile(dataList);
             }
         });
         reader.start();
         reader.join();
-        System.out.println("Read records from csv: " + recordList.size());
+        System.out.println("Read records from csv: " + dataList.size());
         
         // 2. Send post_uri to aws server
         System.out.println("Client starting ...... Time:" + getDate());
         System.out.println("All threads running..."); 
         List<Callable<Metrics>> postTasks = new ArrayList<>();
-        String postUri = LOCAL_URI + "/load";
-        int slidesCount = recordList.size() / threadNum;
+        int slidesCount = dataList.size() / threadNum;
         int start, end = 0;
         for (int i = 0; i < threadNum; i++) {
             start = i * slidesCount;
-            end = i == threadNum - 1? recordList.size() : (i + 1) * slidesCount;
-            postTasks.add(new PostTask(start, end, recordList, postUri));
+            end = i == threadNum - 1? dataList.size() : (i + 1) * slidesCount;
+            postTasks.add(new PostTask(start, end, dataList, LOCAL_URI));
         }
         
-        List<Callable<Metrics>> getTasks = new ArrayList<>();
-        //for (Record record : recordList) {
-        //    getTasks.add(new GetTask(record, LOCAL_URI));
-        //}
+        //List<Callable<Metrics>> getTasks = new ArrayList<>();
+        /*for (RFIDLiftData record : dataList) {
+            getTasks.add(new GetTask(record, LOCAL_URI));
+        }*/
         long startTime = System.currentTimeMillis();
         runTasks(postTasks);
         //runTasks(getTasks);
         
-        // 3. Metrics
+        // 3. Produce Metrics
         MetricUtils metricUtils = new MetricUtils();
-        for (Callable<Metrics> task : getTasks) {
-            metricUtils.add(((GetTask)task).getMetrics());
+        for (Callable<Metrics> task : postTasks) {
+            metricUtils.add(((PostTask)task).getMetrics());
         }
+        /*for (Callable<Metrics> task : getTasks) {
+            metricUtils.add(((GetTask)task).getMetrics());
+        }*/
         System.out.println("All threads complete... Time: " + getDate());
-        //metricUtils.getMetrics();
+        metricUtils.getMetrics();
         System.out.println("Total number of requests sent: " + 
                 metricUtils.getSentRequestCount());
         System.out.println("Total number of successfully response: " + 

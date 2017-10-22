@@ -13,12 +13,12 @@ import javax.ws.rs.core.Response;
 
 public class GetTask implements Callable<Metrics> {
         
-    private final Record record;
+    private final RFIDLiftData record;
     private final String uri;
     private Metrics metrics;
     private static AtomicInteger counter = new AtomicInteger();
     
-    public GetTask(Record record, String uri) {
+    public GetTask(RFIDLiftData record, String uri) {
         this.record = record;
         this.uri = uri;
         this.metrics = new Metrics();

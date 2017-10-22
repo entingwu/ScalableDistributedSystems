@@ -9,8 +9,8 @@ public class SkiMetric  {
     private int liftNum;
     
     public SkiMetric() {}
-    
-    public SkiMetric(String skierId, String dayNum, 
+  
+    public SkiMetric(String id, String skierId, String dayNum, 
             int totalVertical, int liftNum) {
         this.id = id;
         this.skierId = skierId;

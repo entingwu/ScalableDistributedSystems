@@ -1,14 +1,14 @@
 package com.entingwu.jersey.jdbc;
 
-import com.entingwu.jersey.model.Record;
+import com.entingwu.jersey.model.RFIDLiftData;
 import java.sql.SQLException;
 
 public class TestJDBC {
     
     public static void main(String[] args) throws SQLException {
-        RecordDAO dao = RecordDAO.getRecordDAO();
+        RFIDLiftDAO dao = RFIDLiftDAO.getRFIDLiftDAO();
         dao.cleanUp();
-        Record record = new Record("0", "1", "8", 30, "1");
+        RFIDLiftData record = new RFIDLiftData("0", "1", "8", 30, "1");
         long id = dao.insert(record);
         System.out.println("id: " + id);
     }

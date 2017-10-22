@@ -1,5 +1,5 @@
-com/entingwu/jersey/jdbc/RecordDAO.class
-com/entingwu/jersey/model/Record.class
+com/entingwu/jersey/model/RFIDLiftData.class
+com/entingwu/jersey/jdbc/RFIDLiftDAO.class
 com/entingwu/jersey/model/SkiMetric.class
 com/entingwu/jersey/jdbc/TestJDBC.class
 com/entingwu/jersey/jdbc/ConnectUtils.class
