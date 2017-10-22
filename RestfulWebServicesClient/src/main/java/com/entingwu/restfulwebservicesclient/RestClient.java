@@ -5,102 +5,78 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RestClient {
     
-    private static final String REST_CLIENT = RestClient.class.getName();
     private static final String LOCAL_URI = 
             "http://localhost:9090/RestfulWebServices/rest";
     private static String ip = "35.167.118.155";
     private static String port = "8080";
-    private static String remoteUri = getServerAddress(ip, port);
+    private static String REMOTE_URI = getServerAddress(ip, port);
     private static int threadNum = 32;
-    
-    protected ArrayList<Record> queue = null;
-    private AtomicBoolean isDone = new AtomicBoolean(false);
-    private ExecutorService executor;
-    private List<ClientThread> threads = new ArrayList<>();
-    static CyclicBarrier barrier;
-    private static long requestSum;
-    private static long successSum;
+    protected List<Record> recordList = null;
 
-    public long clientProcessing(int threadNum, String ip, String port) throws Exception {
-        queue = new ArrayList<>();
-        executor = getExecutor(threadNum);
-        barrier = new CyclicBarrier(threadNum);
-
+    public void clientProcessing(int threadNum, String ip, String port) 
+            throws Exception {
+        recordList = new ArrayList<>();
+        // 1. Read records from .csv
         Thread reader = new Thread(new Runnable() {
             @Override
             public void run() {
-                 DataReader.readFile(queue);
+                 DataReader.readFile(recordList);
             }
         });
         reader.start();
         reader.join();
-        System.out.println("queue size is" + queue.size());
+        System.out.println("Read records from csv: " + recordList.size());
         
-        int slidesCount = queue.size()/threadNum;
-
-        long start = System.currentTimeMillis();
-        System.out.println("All threads running...");
-        
-        /*DataReader dataReader = new DataReader();
-        List<Record> records = dataReader.get();
-        System.out.println("finished reading from file: " + records.size());
-//        
+        // 2. Send post_uri to aws server
+        System.out.println("Client starting ...... Time:" + getDate());
+        System.out.println("All threads running..."); 
         List<Callable<Metrics>> postTasks = new ArrayList<>();
-        int size = records.size();
-        int len = size;
-        for (int i = 0; i < size; i += len) {
-            int end = i + len < size ? i + len : size;
-            postTasks.add(new PostTask(i, end, records, ip, Integer.parseInt(port)));
-        }
-        long start = System.currentTimeMillis();
-        runTasks(postTasks);
-        
-        Statistic statics = new Statistic();
-        for (Callable<Metrics> task : postTasks) {
-            if (task instanceof PostTask) {
-                statics.add(((PostTask)task).getMetrics());
-            }
-        }
-        System.out.println("Total number of requests sent: " + statics.getSentRequestsNum());
-        System.out.println("Total number of successfully response: " + statics.getSuccessRequestsNum());*/
-        
-        List<Future> futures = new ArrayList<>();
+        String postUri = LOCAL_URI + "/load";
+        int slidesCount = recordList.size() / threadNum;
+        int start, end = 0;
         for (int i = 0; i < threadNum; i++) {
-            ClientThread thread = new ClientThread(queue, remoteUri, barrier, isDone);
-            thread.start = i * slidesCount;
-            thread.end = i == threadNum - 1? queue.size() : (i + 1) * slidesCount;
-            threads.add(thread);
-            Future future = executor.submit(thread);
-            futures.add(future);
-        }
-         
-        for (Future future : futures) {
-            try {
-                future.get();
-            } catch (InterruptedException | ExecutionException ex) {
-                Logger.getLogger(REST_CLIENT).log(Level.SEVERE, null, ex);
-            }
+            start = i * slidesCount;
+            end = i == threadNum - 1? recordList.size() : (i + 1) * slidesCount;
+            postTasks.add(new PostTask(start, end, recordList, postUri));
         }
         
-        executor.shutdown();
+        List<Callable<Metrics>> getTasks = new ArrayList<>();
+        //for (Record record : recordList) {
+        //    getTasks.add(new GetTask(record, LOCAL_URI));
+        //}
+        long startTime = System.currentTimeMillis();
+        runTasks(postTasks);
+        //runTasks(getTasks);
+        
+        // 3. Metrics
+        MetricUtils metricUtils = new MetricUtils();
+        for (Callable<Metrics> task : getTasks) {
+            metricUtils.add(((GetTask)task).getMetrics());
+        }
         System.out.println("All threads complete... Time: " + getDate());
-        return System.currentTimeMillis() - start;
+        //metricUtils.getMetrics();
+        System.out.println("Total number of requests sent: " + 
+                metricUtils.getSentRequestCount());
+        System.out.println("Total number of successfully response: " + 
+                metricUtils.getSuccessRequestCount());
+        
+        long runTime = System.currentTimeMillis() - startTime;
+        System.out.println("Test Wall Time: " + runTime + " ms");
+    }
+    
+    private static void runTasks(List<Callable<Metrics>> tasks) 
+            throws InterruptedException {
+        ExecutorService executorService = Executors.newFixedThreadPool(threadNum);
+        executorService.invokeAll(tasks);
+        executorService.shutdown();
+        executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
     }
     
     private static String getServerAddress(String ip, String port) {
@@ -109,31 +85,14 @@ public class RestClient {
                 .append(ip)
                 .append(":")
                 .append(port)
-                .append("/RestfulWebServices2/rest")
+                .append("/RestfulWebServices/rest")
                 .toString();
-    }
-
-    private ExecutorService getExecutor(int threads) {
-        if (executor == null) {
-            executor = Executors.newFixedThreadPool(threads);
-        }
-        return executor;
-    }
-    
-    public static synchronized void updateCount(
-            long requestDelta, long successDelta) {
-        requestSum += requestDelta;
-        successSum += successDelta;
     }
     
     private static String getDate() {
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         Date date = new Date();
         return dateFormat.format(date);
-    }
-    
-    public List<ClientThread> getThreads() {
-        return threads;
     }
 
     public static void main(String[] args) throws Exception {
@@ -145,25 +104,6 @@ public class RestClient {
         }
         
         RestClient restClient = new RestClient();
-  
-        System.out.println("Client starting ...... Time:" + getDate());
-        long runTime = restClient.clientProcessing(
-                threadNum, ip, String.valueOf(port));
-        System.out.println("Total Number of requests sent: " + requestSum);
-        System.out.println("Total Number of Successful responses: " + 
-                successSum);
-        
-        //MetricUtils metrics = new MetricUtils();
-        //metrics.getMetrics(restClient.getThreads(), runTime, 
-        //        requestSum, successSum);
-        System.out.println("Test Wall Time: " + runTime + " ms");
-    }
-    
-    private static void runTasks(List<Callable<Metrics>> tasks) 
-            throws InterruptedException {
-        ExecutorService executorService = Executors.newCachedThreadPool();
-        executorService.invokeAll(tasks);
-        executorService.shutdown();
-        executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        restClient.clientProcessing(threadNum, ip, port);
     }
 }

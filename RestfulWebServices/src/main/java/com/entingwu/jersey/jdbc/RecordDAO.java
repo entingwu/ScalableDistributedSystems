@@ -5,6 +5,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Singleton;
@@ -14,8 +17,10 @@ public class RecordDAO {
     
     private static final String RECORD_DAO = RecordDAO.class.getName();
     private static final String TABLE = "skidata";
+    private static final String SKI_METRIC_TABLE = "skimetrics";
     private static RecordDAO instance = null;
     protected ConnectUtils connectionUtils;
+    private static Map<String, List<Integer>> map = new HashMap<>();
     
     protected RecordDAO() {
         connectionUtils = new ConnectUtils();
@@ -28,7 +33,8 @@ public class RecordDAO {
         return instance;
     }
     
-    public Record findRecordByFilter(String skierID, String dayNum) {
+    public Record findRecordByFilter(String skierID, String dayNum) 
+            throws SQLException {
         String stmt = "SELECT * FROM " + TABLE + " WHERE skier_id = ? and day_num = ?";
         Connection connection = null;
         PreparedStatement selectStmt = null;
@@ -53,34 +59,15 @@ public class RecordDAO {
             selectStmt.close();
         } catch (SQLException ex) {
             Logger.getLogger(RECORD_DAO).log(Level.SEVERE, null, ex);
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
         }
         return record;
     }
     
-    public void getRecord() {
-        String stmt = "SELECT * FROM " + TABLE;
-        Connection connection = null;
-        PreparedStatement selectStmt = null;
-        ResultSet results = null;
-        
-        try {
-            connection = ConnectUtils.getConnection();
-            selectStmt = connection.prepareStatement(stmt);
-            results = selectStmt.executeQuery();
-            while (results.next()) {
-                System.out.println(results.getString(1) + "\t" + 
-                        results.getString(2) + "\t" + 
-                        results.getString(3) + "\t" + 
-                        results.getString(4) + "\t" + 
-                        results.getString(5) + "\t");
-            }
-            selectStmt.close();
-        } catch (SQLException ex) {
-            Logger.getLogger(RECORD_DAO).log(Level.SEVERE, null, ex);
-        }
-    }
-    
-    public long insert(Record record) {
+    public long insert(Record record) throws SQLException {
         String stmt = "INSERT INTO " + TABLE + 
         "(resort_id, day_num, skier_id, lift_id, timestamp)  " +
         "VALUES (?, ?, ?, ?, ?);";
@@ -109,6 +96,10 @@ public class RecordDAO {
             insertStmt.close();
         } catch (SQLException ex) {
             Logger.getLogger(RECORD_DAO).log(Level.SEVERE, null, ex);
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
         }
         return id;        
     }
