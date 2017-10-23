@@ -1,5 +1,6 @@
 package com.entingwu.restfulwebservicesclient;
 
+import com.entingwu.restfulwebservicesclient.write.RFIDLiftData;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -21,7 +22,7 @@ public class DataReader {
         try {
             br = new BufferedReader(new FileReader(FILE_NAME));
             while ((line = br.readLine()) != null) {
-                if (i > 0 && i < 21) {
+                if (i > 0 && i < 201) {
                     String[] strs = line.split(",");
                     RFIDLiftData record = new RFIDLiftData(
                             strs[0], strs[1], strs[2], 

@@ -34,7 +34,8 @@ public class SkiMetricDAO {
     
     public SkiMetric findSkiMetricByFilter(String skierID, String dayNum) 
             throws SQLException {
-        String stmt = "SELECT * FROM " + SKI_METRIC_TABLE + " WHERE skier_id = ? and day_num = ?";
+        String stmt = "SELECT * FROM " + SKI_METRIC_TABLE + 
+                " WHERE skier_id = ? and day_num = ?";
         Connection connection = null;
         PreparedStatement selectStmt = null;
         ResultSet results = null;

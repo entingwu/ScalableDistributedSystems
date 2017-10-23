@@ -8,7 +8,6 @@ import com.entingwu.jersey.jdbc.SkiMetricDAO;
 import com.entingwu.jersey.model.RFIDLiftData;
 import com.entingwu.jersey.model.SkiMetric;
 import java.sql.SQLException;
-import javax.annotation.PostConstruct;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -28,13 +27,13 @@ public class RestServer {
     @GET
     @Path("/myvert/{skierID}&{dayNum}")
     @Produces(MediaType.APPLICATION_JSON)
-    public String getData(
+    public SkiMetric getData(
             @PathParam("skierID") String skierID,
             @PathParam("dayNum") String dayNum) throws SQLException {
         SkiMetricDAO skiMetricDAO = SkiMetricDAO.getSkiMetricDAO();
         SkiMetric skiMetric = skiMetricDAO.findSkiMetricByFilter(skierID, dayNum); 
         System.out.println("get: " + skiMetric.toString());
-        return skiMetric.toString();
+        return skiMetric;
     }
     
     @POST
@@ -43,17 +42,22 @@ public class RestServer {
     @Produces(MediaType.APPLICATION_JSON)
     public String postData(RFIDLiftData record) throws SQLException {
         System.out.println("post: " + record.getSkierID());
-        // cache
+        postDataWithCache(record);
+        //postDataWithNoCache(record);
+        return record.toString();
+    }
+    
+    private void postDataWithCache(RFIDLiftData record) throws SQLException {
         WriteCache writeCache = WriteCache.getInstance();
         writeCache.putToWriteCache(record);
         ReadCache readCache = ReadCache.getInstance();
         readCache.putToReadCache(record);
-        
-        // no cache
-        /*RFIDLiftDAO dao = RFIDLiftDAO.getRFIDLiftDAO();
+    }
+    
+    private void postDataWithNoCache(RFIDLiftData record) throws SQLException {
+        RFIDLiftDAO dao = RFIDLiftDAO.getRFIDLiftDAO();
         dao.insertRFIDLift(record);
         SkiMetricDAO skiMetricDAO = SkiMetricDAO.getSkiMetricDAO();
-        skiMetricDAO.upsertSkiMetric(record);*/
-        return record.toString();
+        skiMetricDAO.upsertSkiMetric(record);
     }
 }
