@@ -63,12 +63,7 @@ public class RestClient {
             metricUtils.add(((GetTask)task).getMetrics());
         }*/
         System.out.println("All threads complete... Time: " + getDate());
-        metricUtils.getMetrics();
-        System.out.println("Total number of requests sent: " + 
-                metricUtils.getSentRequestCount());
-        System.out.println("Total number of successfully response: " + 
-                metricUtils.getSuccessRequestCount());
-        
+        metricUtils.getMetrics();        
         long runTime = System.currentTimeMillis() - startTime;
         System.out.println("Test Wall Time: " + runTime + " ms");
     }

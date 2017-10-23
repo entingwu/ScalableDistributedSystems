@@ -9,7 +9,7 @@ public class TestJDBC {
         RFIDLiftDAO dao = RFIDLiftDAO.getRFIDLiftDAO();
         dao.cleanUp();
         RFIDLiftData record = new RFIDLiftData("0", "1", "8", 30, "1");
-        long id = dao.insert(record);
+        long id = dao.insertRFIDLift(record);
         System.out.println("id: " + id);
     }
 }

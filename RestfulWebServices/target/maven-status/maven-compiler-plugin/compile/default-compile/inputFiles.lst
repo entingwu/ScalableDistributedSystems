@@ -1,7 +1,10 @@
 /Users/entingwu/NetBeansProjects/RestfulWebServices/src/main/java/com/entingwu/jersey/jdbc/SkiMetricDAO.java
 /Users/entingwu/NetBeansProjects/RestfulWebServices/src/main/java/com/entingwu/jersey/jdbc/ConnectUtils.java
 /Users/entingwu/NetBeansProjects/RestfulWebServices/src/main/java/com/entingwu/jersey/model/RFIDLiftData.java
+/Users/entingwu/NetBeansProjects/RestfulWebServices/src/main/java/com/entingwu/jersey/cache/WriteCache.java
 /Users/entingwu/NetBeansProjects/RestfulWebServices/src/main/java/com/entingwu/jersey/jdbc/RFIDLiftDAO.java
 /Users/entingwu/NetBeansProjects/RestfulWebServices/src/main/java/com/entingwu/jersey/jdbc/TestJDBC.java
 /Users/entingwu/NetBeansProjects/RestfulWebServices/src/main/java/com/entingwu/jersey/RestServer.java
+/Users/entingwu/NetBeansProjects/RestfulWebServices/src/main/java/com/entingwu/jersey/cache/ReadCache.java
 /Users/entingwu/NetBeansProjects/RestfulWebServices/src/main/java/com/entingwu/jersey/model/SkiMetric.java
+/Users/entingwu/NetBeansProjects/RestfulWebServices/src/main/java/com/entingwu/jersey/cache/CacheSyncWorker.java

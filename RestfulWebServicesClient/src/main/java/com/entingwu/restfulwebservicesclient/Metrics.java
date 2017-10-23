@@ -9,9 +9,9 @@ public class Metrics {
     private List<Long> latencies = new ArrayList<>();
     
     public void addRequest(long latency, boolean isSent, boolean isSuccess) {
-        latencies.add(latency);
         requestCount += isSent? 1 : 0;
         successCount += isSuccess? 1 : 0;
+        latencies.add(latency);
     }
     
     public int getSuccessCount() {

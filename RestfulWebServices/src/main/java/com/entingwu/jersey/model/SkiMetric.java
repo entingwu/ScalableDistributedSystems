@@ -18,6 +18,15 @@ public class SkiMetric  {
         this.totalVertical = totalVertical;
         this.liftNum = liftNum;
     }
+    
+    public void update(RFIDLiftData record) {
+        this.totalVertical += record.getVertical();
+        this.liftNum += 1;
+    }
+    
+    public String getID() {
+        return skierId + "&" + dayNum;
+    }
 
     public String getSkierID() {
         return skierId;
