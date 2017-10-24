@@ -17,7 +17,7 @@ import javax.inject.Singleton;
 public class SkiMetricDAO {
     
     private static final String SKI_METRIC_DAO = SkiMetricDAO.class.getName();
-    private static final String SKI_METRIC_TABLE = "skimetrics1";
+    private static final String SKI_METRIC_TABLE = "skimetrics";
     private static SkiMetricDAO instance = null;
     protected ConnectUtils connectionUtils;
     

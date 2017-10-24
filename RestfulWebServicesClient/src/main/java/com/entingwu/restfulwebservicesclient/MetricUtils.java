@@ -2,6 +2,7 @@ package com.entingwu.restfulwebservicesclient;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 public class MetricUtils {
@@ -50,6 +51,11 @@ public class MetricUtils {
                     + latencyArray[size / 2 - 1]) / 2 * 1.0;
         }
         return median;
+    }
+    
+    public List<Long> getLatencies() {
+        latencies.sort(Comparator.naturalOrder());
+        return latencies;
     }
 
     public int getSuccessRequestCount() {

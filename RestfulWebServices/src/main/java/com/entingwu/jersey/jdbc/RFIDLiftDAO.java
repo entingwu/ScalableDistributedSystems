@@ -16,7 +16,7 @@ import javax.inject.Singleton;
 public class RFIDLiftDAO {
     
     private static final String RFIDLiftDAO = RFIDLiftDAO.class.getName();
-    private static final String SKI_DATA = "skidata1";
+    private static final String SKI_DATA = "skidata";
     private static RFIDLiftDAO instance = null;
     protected ConnectUtils connectionUtils;
     

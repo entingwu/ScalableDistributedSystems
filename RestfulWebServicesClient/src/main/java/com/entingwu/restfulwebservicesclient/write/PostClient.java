@@ -7,6 +7,7 @@ import java.util.concurrent.Callable;
 
 public class PostClient extends RestClient {
     
+    private static final String FILE_NAME = "post";
     private static int threadNum = 100;
 
     @Override
@@ -23,7 +24,7 @@ public class PostClient extends RestClient {
         for (int i = 0; i < threadNum; i++) {
             start = i * slidesCount;
             end = i == threadNum - 1? dataList.size() : (i + 1) * slidesCount;
-            postTasks.add(new PostTask(start, end, dataList, LOCAL_URI));
+            postTasks.add(new PostTask(start, end, dataList, REMOTE_URI));
         }
         long startTime = System.currentTimeMillis();
         runTasks(postTasks, threadNum);
@@ -37,6 +38,8 @@ public class PostClient extends RestClient {
         metricUtils.getMetrics(); 
         long runTime = System.currentTimeMillis() - startTime;
         System.out.println("Test Wall Time: " + runTime + " ms");
+        DataOutput dataOutput = new DataOutput();
+        dataOutput.generateChart(metricUtils.getLatencies(), FILE_NAME);
     }
 
     public static void main(String[] args) throws Exception {
