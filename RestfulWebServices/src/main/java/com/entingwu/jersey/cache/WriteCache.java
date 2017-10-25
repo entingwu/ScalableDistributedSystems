@@ -28,6 +28,7 @@ public class WriteCache {
     
     public synchronized List<RFIDLiftData> getWriteCache() {
         List<RFIDLiftData> data = writeCacheList;
+        writeCacheList = new ArrayList<>();
         return data;
     }
     

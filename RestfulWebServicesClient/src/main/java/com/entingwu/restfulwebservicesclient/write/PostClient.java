@@ -8,7 +8,7 @@ import java.util.concurrent.Callable;
 public class PostClient extends RestClient {
     
     private static final String FILE_NAME = "post";
-    private static int threadNum = 100;
+    private static int threadNum = 150;
 
     @Override
     public void clientProcessing(int threadNum, String ip, String port) 

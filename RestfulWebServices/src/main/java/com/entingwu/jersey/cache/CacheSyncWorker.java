@@ -27,14 +27,14 @@ public class CacheSyncWorker {
     Executors.newScheduledThreadPool(1);
     
     public static void init() {
-        //System.out.println("begin here");
-        rfidLiftDAO = RFIDLiftDAO.getRFIDLiftDAO();
-        skiMetricDAO = SkiMetricDAO.getSkiMetricDAO();
+        System.out.println("begin here");
+        rfidLiftDAO = RFIDLiftDAO.getInstance();
+        skiMetricDAO = SkiMetricDAO.getInstance();
         ScheduledFuture scheduledFuture =
             scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
-                //System.out.println("CacheSyncWorker here");
+                System.out.println("CacheSyncWorker here");
                 syncWriteCacheToDB();
                 syncReadCacheToDB();
             }}, 0 , SYNC_UP_SCHEDULE , TimeUnit.MILLISECONDS);
@@ -48,7 +48,6 @@ public class CacheSyncWorker {
             List<RFIDLiftData> batchData = writeCache.getWriteCache();
             try {
                 rfidLiftDAO.batchInsertRFIDLift(batchData);
-                batchData.clear();
                 start = curr;
             } catch (SQLException ex) {
                 Logger.getLogger(CACHE_SYNC_WORKER).log(Level.SEVERE, null, ex);
@@ -61,13 +60,12 @@ public class CacheSyncWorker {
         ReadCache readCache = ReadCache.getInstance(); 
         if (readCache.size() > BATCH_COUNT || 
             (curr - start > SYNC_UP_SCHEDULE) && readCache.size() != 0) {
-            Map<String, SkiMetric> dataMap = readCache.getReadCache();
+            Map<String, SkiMetric> dataMap = readCache.getTempReadCache();
             try {
                 if (!dataMap.isEmpty()) {
                     List<SkiMetric> batchSkiMetric = 
                             new ArrayList<>(dataMap.values());
                     skiMetricDAO.batchUpsertSkiMetric(batchSkiMetric);
-                    dataMap.clear();
                 }
                 start = curr;
             } catch (SQLException ex) {

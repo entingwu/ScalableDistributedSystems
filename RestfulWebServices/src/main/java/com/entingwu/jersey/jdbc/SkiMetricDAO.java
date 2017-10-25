@@ -25,7 +25,7 @@ public class SkiMetricDAO {
         connectionUtils = new ConnectUtils();
     }
     
-    public static SkiMetricDAO getSkiMetricDAO() {
+    public static SkiMetricDAO getInstance() {
         if (instance == null) {
             instance = new SkiMetricDAO();
         }
@@ -39,7 +39,7 @@ public class SkiMetricDAO {
         Connection connection = null;
         PreparedStatement selectStmt = null;
         ResultSet results = null;
-        SkiMetric skiMetric = null;
+        SkiMetric skiMetric = new SkiMetric();
         
         try {
             connection = ConnectUtils.getConnection();

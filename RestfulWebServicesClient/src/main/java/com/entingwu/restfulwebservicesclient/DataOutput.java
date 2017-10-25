@@ -28,7 +28,7 @@ public class DataOutput extends JFrame {
         
         // 2. Create chart
         JFreeChart chart = ChartFactory.createXYLineChart(
-                "Throughput", "Ranking", "Latency", dataset);
+                "Throughput", "Count", "Latency", dataset);
         chart.getLegend().setFrame(BlockBorder.NONE);
         
         // 3. Write to file

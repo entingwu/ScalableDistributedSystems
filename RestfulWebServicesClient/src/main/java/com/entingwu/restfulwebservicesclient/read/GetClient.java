@@ -7,7 +7,9 @@ import java.util.concurrent.Callable;
 
 public class GetClient extends RestClient {
     
-    private static int threadNum = 32;
+    private static final String FILE_NAME = "get";
+    private static final int SKIER_NUM = 40000;
+    private static int threadNum = 50;
 
     @Override
     public void clientProcessing(int threadNum, String ip, String port) 
@@ -18,12 +20,12 @@ public class GetClient extends RestClient {
         // 2. Send get_uri to aws server
         System.out.println("All threads running..."); 
         List<Callable<Metrics>> getTasks = new ArrayList<>();
-        int slidesCount = dataList.size() / threadNum;
+        int skiersPerThread = SKIER_NUM / threadNum;
         int start, end = 0;
         for (int i = 0; i < threadNum; i++) {
-            start = i * slidesCount;
-            end = i == threadNum - 1? dataList.size() : (i + 1) * slidesCount;
-            getTasks.add(new GetTask(start, end, dataList, LOCAL_URI));
+            start = i * skiersPerThread + 1;
+            end = (i + 1) * skiersPerThread;
+            getTasks.add(new GetTask(start, end, REMOTE_URI));
         }
         long startTime = System.currentTimeMillis();
         runTasks(getTasks, threadNum);
@@ -37,6 +39,8 @@ public class GetClient extends RestClient {
         metricUtils.getMetrics();        
         long runTime = System.currentTimeMillis() - startTime;
         System.out.println("Test Wall Time: " + runTime + " ms");
+        DataOutput dataOutput = new DataOutput();
+        dataOutput.generateChart(metricUtils.getLatencies(), FILE_NAME);
     }
 
     public static void main(String[] args) throws Exception {

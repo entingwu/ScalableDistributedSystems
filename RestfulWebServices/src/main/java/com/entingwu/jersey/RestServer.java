@@ -30,9 +30,24 @@ public class RestServer {
     public SkiMetric getData(
             @PathParam("skierID") String skierID,
             @PathParam("dayNum") String dayNum) throws SQLException {
-        SkiMetricDAO skiMetricDAO = SkiMetricDAO.getSkiMetricDAO();
+        SkiMetric skiMetric = getDataWithCache(skierID, dayNum);
+        return skiMetric;
+    }
+    
+    private SkiMetric getDataWithCache(String skierID, String dayNum) throws SQLException {
+        ReadCache readCache = ReadCache.getInstance();
+        String key = RFIDLiftData.getID(skierID, dayNum);
+        SkiMetric skiMetric = readCache.getSkiMetric(key);
+        if (skiMetric != null) {
+            System.out.println("get cache: " + skiMetric.toString());
+            return skiMetric;
+        }
+        return getDataWithNoCache(skierID, dayNum);
+    }
+    
+    private SkiMetric getDataWithNoCache(String skierID, String dayNum) throws SQLException {
+        SkiMetricDAO skiMetricDAO = SkiMetricDAO.getInstance();
         SkiMetric skiMetric = skiMetricDAO.findSkiMetricByFilter(skierID, dayNum); 
-        System.out.println("get: " + skiMetric.toString());
         return skiMetric;
     }
     
@@ -55,9 +70,9 @@ public class RestServer {
     }
     
     private void postDataWithNoCache(RFIDLiftData record) throws SQLException {
-        RFIDLiftDAO dao = RFIDLiftDAO.getRFIDLiftDAO();
+        RFIDLiftDAO dao = RFIDLiftDAO.getInstance();
         dao.insertRFIDLift(record);
-        SkiMetricDAO skiMetricDAO = SkiMetricDAO.getSkiMetricDAO();
+        SkiMetricDAO skiMetricDAO = SkiMetricDAO.getInstance();
         skiMetricDAO.upsertSkiMetric(record);
     }
 }

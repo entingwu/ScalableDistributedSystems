@@ -24,7 +24,7 @@ public class RFIDLiftDAO {
         connectionUtils = new ConnectUtils();
     }
     
-    public static RFIDLiftDAO getRFIDLiftDAO() {
+    public static RFIDLiftDAO getInstance() {
         if (instance == null) {
             instance = new RFIDLiftDAO();
         }

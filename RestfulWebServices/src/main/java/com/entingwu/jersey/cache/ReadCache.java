@@ -10,9 +10,11 @@ import javax.inject.Singleton;
 public class ReadCache {
     
     private static ReadCache instance;
+    private Map<String, SkiMetric> tempCacheMap;
     private Map<String, SkiMetric> readCacheMap;
     
     public ReadCache() {
+        tempCacheMap = new HashMap<>();
         readCacheMap = new HashMap<>();
     }
     
@@ -24,23 +26,33 @@ public class ReadCache {
     }
     
     public synchronized void putToReadCache(RFIDLiftData record) {
-        String key = record.getSkierID() + "&" + record.getDayNum();
-        if (!readCacheMap.containsKey(key)) {
+        String key = record.getID();
+        if (!tempCacheMap.containsKey(key)) {
             SkiMetric value = new SkiMetric(key, record.getSkierID(), 
                     record.getDayNum(), record.getVertical(), 1);
-            readCacheMap.put(key, value);
+            tempCacheMap.put(key, value);
         } else {
-            SkiMetric value = readCacheMap.get(key);
+            SkiMetric value = tempCacheMap.get(key);
             value.update(record);
         }
     }
     
-    public synchronized Map<String, SkiMetric> getReadCache() {
-        Map<String, SkiMetric> data = readCacheMap;
+    public synchronized Map<String, SkiMetric> getTempReadCache() {
+        readCacheMap.putAll(tempCacheMap);
+        System.out.println("readCacheMap: " + readCacheMap.size());
+        Map<String, SkiMetric> data = tempCacheMap;
+        tempCacheMap = new HashMap<>();
         return data;
     }
     
+    public synchronized SkiMetric getSkiMetric(String key) {
+        if (readCacheMap.containsKey(key)) {
+            return readCacheMap.get(key);
+        }
+        return null;
+    }
+    
     public synchronized int size() {
-        return readCacheMap == null ? 0 : readCacheMap.size();
+        return tempCacheMap == null ? 0 : tempCacheMap.size();
     }
 }

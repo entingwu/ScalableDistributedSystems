@@ -76,6 +76,14 @@ public class RFIDLiftData  {
         this.timestamp = timestamp;
     }
     
+    public static String getID(String skierId, String dayNum) {
+        return skierId + "&" + dayNum;
+    }
+    
+    public String getID() {
+        return skierId + "&" + dayNum;
+    }
+    
     @Override
     public String toString() {
         return "id = " + id + ", resortID = " + resortId + 
