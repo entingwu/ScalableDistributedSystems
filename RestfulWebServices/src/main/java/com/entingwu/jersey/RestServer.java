@@ -38,6 +38,7 @@ public class RestServer {
         String key = RFIDLiftData.getID(skierID, dayNum);
         SkiMetric skiMetric = readCache.getSkiMetric(key);
         if (skiMetric != null) {
+            System.out.println("get cache: " + skiMetric.toString());
             return skiMetric;
         }
         return getDataWithNoCache(skierID, dayNum, readCache);
