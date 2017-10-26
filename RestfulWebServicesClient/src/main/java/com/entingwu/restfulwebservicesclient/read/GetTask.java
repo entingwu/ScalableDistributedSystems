@@ -51,7 +51,7 @@ public class GetTask implements Callable<Metrics> {
                 //System.out.println("do get: " + response.readEntity(SkiMetric.class));
                 counter.getAndIncrement();
                 if (counter.get() % 100 == 0) {
-                    System.out.println("Progress: " + counter.get());
+                    //System.out.println("Progress: " + counter.get());
                 }
             }            
             isSent = true;

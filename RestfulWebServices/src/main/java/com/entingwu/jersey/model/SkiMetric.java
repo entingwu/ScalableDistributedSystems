@@ -2,9 +2,9 @@ package com.entingwu.jersey.model;
 
 public class SkiMetric  {
 
-    private String id = "";
-    private String skierId = "";
-    private String dayNum = "";
+    private String id;
+    private String skierId;
+    private String dayNum;
     private int totalVertical;
     private int liftNum;
     
@@ -22,10 +22,6 @@ public class SkiMetric  {
     public void update(RFIDLiftData record) {
         this.totalVertical += record.getVertical();
         this.liftNum += 1;
-    }
-    
-    public String getID() {
-        return skierId + "&" + dayNum;
     }
 
     public String getSkierID() {
@@ -58,6 +54,10 @@ public class SkiMetric  {
 
     public void setLiftNum(int liftNum) {
         this.liftNum = liftNum;
+    }
+    
+    public String getID() {
+        return skierId + "&" + dayNum;
     }
     
     @Override

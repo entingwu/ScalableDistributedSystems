@@ -81,7 +81,7 @@ public class RFIDLiftData  {
     }
     
     public String getID() {
-        return skierId + "&" + dayNum;
+        return getID(skierId, dayNum);
     }
     
     @Override

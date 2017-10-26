@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,14 +27,11 @@ public class CacheSyncWorker {
     Executors.newScheduledThreadPool(1);
     
     public static void init() {
-        System.out.println("begin here");
         rfidLiftDAO = RFIDLiftDAO.getInstance();
         skiMetricDAO = SkiMetricDAO.getInstance();
-        ScheduledFuture scheduledFuture =
-            scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
+        scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
-                System.out.println("CacheSyncWorker here");
                 syncWriteCacheToDB();
                 syncReadCacheToDB();
             }}, 0 , SYNC_UP_SCHEDULE , TimeUnit.MILLISECONDS);

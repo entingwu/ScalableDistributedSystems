@@ -5,8 +5,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -19,9 +17,9 @@ public class RFIDLiftDAO {
     private static final String RFIDLiftDAO = RFIDLiftDAO.class.getName();
     private static final String SKI_DATA = "skidata";
     private static final String INSERT_STMT = 
-            "INSERT INTO " + SKI_DATA + "(resort_id, day_num, skier_id, lift_id,"
-            + " timestamp) VALUES (?, ?, ?, ?, ?);";
-    private static RFIDLiftDAO instance = null;
+            "INSERT INTO " + SKI_DATA + "(resort_id, day_num, skier_id, "
+            + "lift_id, timestamp) VALUES (?, ?, ?, ?, ?);";
+    private static RFIDLiftDAO instance;
     protected ConnectUtils connectionUtils;
     
     protected RFIDLiftDAO() {
@@ -35,12 +33,11 @@ public class RFIDLiftDAO {
         return instance;
     }
     
-    public List<RFIDLiftData> batchInsertRFIDLift(List<RFIDLiftData> liftDataList) 
+    public void batchInsertRFIDLift(List<RFIDLiftData> liftDataList) 
             throws SQLException {
-        System.out.println("batchInsertRFIDLift here: " + liftDataList.size());
         Connection connection = null;
         PreparedStatement insertStmt = null;
-        List<RFIDLiftData> failedList = new ArrayList<>();
+        RFIDLiftData record = null;
         
         try {
             connection = ConnectUtils.getConnection();
@@ -48,21 +45,12 @@ public class RFIDLiftDAO {
             synchronized(liftDataList) {
                 Iterator iter = liftDataList.iterator();
                 while (iter.hasNext()) {
-                    RFIDLiftData record = (RFIDLiftData)iter.next();
-                    insertStmt.setString(1, record.getResortID());
-                    insertStmt.setString(2, record.getDayNum());
-                    insertStmt.setString(3, record.getSkierID());
-                    insertStmt.setInt(4, record.getLiftID());
-                    insertStmt.setString(5, record.getTime());
+                    record = (RFIDLiftData)iter.next();
+                    setStatement(insertStmt, record);                    
                     insertStmt.addBatch();
                 }
             }
-            int[] results = insertStmt.executeBatch();
-            for (int i = 0; i < results.length; i++) {
-                if (results[i] == Statement.EXECUTE_FAILED) {
-                    failedList.add(liftDataList.get(i));
-                }
-            }
+            insertStmt.executeBatch();
             insertStmt.close();
         } catch (SQLException ex) {
             Logger.getLogger(RFIDLiftDAO).log(Level.SEVERE, null, ex);
@@ -70,8 +58,7 @@ public class RFIDLiftDAO {
             if (connection != null) {
                 connection.close();
             }
-        }
-        return failedList;        
+        }       
     }
     
     public long insertRFIDLift(RFIDLiftData record) throws SQLException {
@@ -82,11 +69,7 @@ public class RFIDLiftDAO {
         try {
             connection = ConnectUtils.getConnection();
             insertStmt = connection.prepareStatement(INSERT_STMT);
-            insertStmt.setString(1, record.getResortID());
-            insertStmt.setString(2, record.getDayNum());
-            insertStmt.setString(3, record.getSkierID());
-            insertStmt.setInt(4, record.getLiftID());
-            insertStmt.setString(5, record.getTime());
+            setStatement(insertStmt, record);
             int affectedRows = insertStmt.executeUpdate();
             if (affectedRows > 0) {
                 try (ResultSet rs = insertStmt.getGeneratedKeys()) {
@@ -121,5 +104,14 @@ public class RFIDLiftDAO {
         } catch (SQLException ex) {
             Logger.getLogger(RFIDLiftDAO).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    private void setStatement(PreparedStatement insertStmt, RFIDLiftData record) 
+            throws SQLException {
+        insertStmt.setString(1, record.getResortID());
+        insertStmt.setString(2, record.getDayNum());
+        insertStmt.setString(3, record.getSkierID());
+        insertStmt.setInt(4, record.getLiftID());
+        insertStmt.setString(5, record.getTime());
     }
 }

@@ -50,10 +50,9 @@ public class PostTask implements Callable<Metrics> {
             Response response = webTarget.request().post(Entity.json(record));
             if (response.getStatus() == HTTP_OK) {
                 isSuccess = true;
-                //System.out.println("do post: " + response.readEntity(String.class));
                 counter.getAndIncrement();
                 if (counter.get() % 100 == 0) {
-                    System.out.println("Progress: " + counter.get());
+                    //System.out.println("Progress: " + counter.get());
                 }
             }
             isSent = true;

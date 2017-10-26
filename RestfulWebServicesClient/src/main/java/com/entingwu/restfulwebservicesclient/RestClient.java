@@ -10,6 +10,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class RestClient {
     
@@ -21,8 +23,7 @@ public class RestClient {
     protected List<RFIDLiftData> dataList = null;
 
     public void clientProcessing(
-            int threadNum, String ip, String port) throws Exception {
-        // 1. Read records from .csv
+            int threadNum, String ip, String port) {
         System.out.println("Client starting ...... Time:" + getDate());
         dataList = new ArrayList<>();
         Thread reader = new Thread(new Runnable() {
@@ -32,7 +33,12 @@ public class RestClient {
             }
         });
         reader.start();
-        reader.join();
+        try {
+            reader.join();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(RestClient.class.getName())
+                    .log(Level.SEVERE, null, ex);
+        }
     }
     
     protected static void runTasks(List<Callable<Metrics>> tasks, int threadNum) 
@@ -49,7 +55,7 @@ public class RestClient {
                 .append(ip)
                 .append(":")
                 .append(port)
-                .append("/RestfulWebServicesn/rest")
+                .append("/RestfulWebServices/rest")
                 .toString();
     }
     

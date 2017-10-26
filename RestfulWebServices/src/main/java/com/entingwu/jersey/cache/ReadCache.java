@@ -36,20 +36,18 @@ public class ReadCache {
         }
     }
     
-    public void putToReadCacheFromDB(SkiMetric skiMetric) {
+    public synchronized void putToReadCacheFromDB(SkiMetric skiMetric) {
         readCacheMap.putIfAbsent(skiMetric.getID(), skiMetric);
     }
     
     public synchronized ConcurrentHashMap<String, SkiMetric> getTempReadCache() {
         readCacheMap.putAll(tempCacheMap);
-        System.out.println("readCacheMap: " + readCacheMap.size());
         ConcurrentHashMap<String, SkiMetric> data = tempCacheMap;
         tempCacheMap = new ConcurrentHashMap<>();
         return data;
     }
     
     public synchronized SkiMetric getSkiMetric(String key) {
-        System.out.println("get cache size: " + readCacheMap.size());
         if (readCacheMap.containsKey(key)) {
             return readCacheMap.get(key);
         }

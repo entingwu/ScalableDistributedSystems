@@ -17,11 +17,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 @Path("/")
-public class RestServer {
-    
+public class RestServer { 
     static {
         CacheSyncWorker.init();
-        System.out.println("Load rest server");
     }
     
     @GET
@@ -30,27 +28,26 @@ public class RestServer {
     public SkiMetric getData(
             @PathParam("skierID") String skierID,
             @PathParam("dayNum") String dayNum) throws SQLException {
-        SkiMetric skiMetric = getDataWithCache(skierID, dayNum);
+        ReadCache readCache = ReadCache.getInstance();
+        SkiMetric skiMetric = getDataWithCache(skierID, dayNum, readCache);
         return skiMetric;
     }
     
-    private SkiMetric getDataWithCache(String skierID, String dayNum) throws SQLException {
-        ReadCache readCache = ReadCache.getInstance();
+    private SkiMetric getDataWithCache(String skierID, String dayNum, 
+            ReadCache readCache) throws SQLException {
         String key = RFIDLiftData.getID(skierID, dayNum);
         SkiMetric skiMetric = readCache.getSkiMetric(key);
         if (skiMetric != null) {
-            System.out.println("get cache: " + skiMetric.toString());
             return skiMetric;
         }
-        return getDataWithNoCache(skierID, dayNum);
+        return getDataWithNoCache(skierID, dayNum, readCache);
     }
     
-    private SkiMetric getDataWithNoCache(String skierID, String dayNum) throws SQLException {
-        ReadCache readCache = ReadCache.getInstance();
+    private SkiMetric getDataWithNoCache(String skierID, String dayNum, 
+            ReadCache readCache) throws SQLException {
         SkiMetricDAO skiMetricDAO = SkiMetricDAO.getInstance();
         SkiMetric skiMetric = skiMetricDAO.findSkiMetricByFilter(skierID, dayNum);
         if (skiMetric != null) {
-            System.out.println("get db: " + skiMetric.toString());
             readCache.putToReadCacheFromDB(skiMetric);
         }
         return skiMetric;
@@ -61,9 +58,7 @@ public class RestServer {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public String postData(RFIDLiftData record) throws SQLException {
-        System.out.println("post: " + record.getSkierID());
-        //postDataWithCache(record);
-        postDataWithNoCache(record);
+        postDataWithCache(record);
         return record.toString();
     }
     

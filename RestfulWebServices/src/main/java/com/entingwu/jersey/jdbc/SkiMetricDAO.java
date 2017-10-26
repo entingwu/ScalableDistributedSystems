@@ -6,8 +6,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -25,7 +23,7 @@ public class SkiMetricDAO {
             + "ON CONFLICT (id) DO UPDATE SET "
             + "total_vertical = " + SKI_METRIC_TABLE + ".total_vertical + EXCLUDED.total_vertical, "
             + "lift_num = " + SKI_METRIC_TABLE+ ".lift_num + EXCLUDED.lift_num";
-    private static SkiMetricDAO instance = null;
+    private static SkiMetricDAO instance;
     protected ConnectUtils connectionUtils;
     
     protected SkiMetricDAO() {
@@ -73,12 +71,11 @@ public class SkiMetricDAO {
         return skiMetric;
     }
     
-    public List<SkiMetric> batchUpsertSkiMetric(List<SkiMetric> skiMetricList) 
+    public void batchUpsertSkiMetric(List<SkiMetric> skiMetricList) 
             throws SQLException {
         System.out.println("batchUpsertSkiMetric here " + skiMetricList.size());
         Connection connection = null;
         PreparedStatement upsertStmt = null;
-        List<SkiMetric> failedList = new ArrayList<>();
         
         try {
             connection = ConnectUtils.getConnection();
@@ -95,12 +92,7 @@ public class SkiMetricDAO {
                     upsertStmt.addBatch();
                 }
             }
-            int[] results = upsertStmt.executeBatch();
-            for (int i = 0; i < results.length; i++) {
-                if (results[i] == Statement.EXECUTE_FAILED) {
-                    failedList.add(skiMetricList.get(i));
-                }
-            }
+            upsertStmt.executeBatch();
             upsertStmt.close();
         } catch (SQLException ex) {
             Logger.getLogger(SKI_METRIC_DAO).log(Level.SEVERE, null, ex);
@@ -109,7 +101,6 @@ public class SkiMetricDAO {
                 connection.close();
             }
         }
-        return failedList;
     }
     
     public long upsertSkiMetric(RFIDLiftData record) throws SQLException {

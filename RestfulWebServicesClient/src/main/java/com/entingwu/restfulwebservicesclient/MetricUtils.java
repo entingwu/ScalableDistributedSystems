@@ -43,7 +43,7 @@ public class MetricUtils {
     }
     
     private double getMedianLatency(long[] latencyArray, int size) {
-        double median = 0.0;
+        double median;
         if (size % 2 == 1) {
             median = latencyArray[size / 2];
         } else {
@@ -68,11 +68,15 @@ public class MetricUtils {
     
     private void print(double mean, double median, long p99Latency, 
             long p95Latency) {
-        System.out.println("Total number of requests sent: " + requestCount);
-        System.out.println("Total number of successfully response: " + successCount);
-        System.out.println("Mean latency for all requests: " + mean + " ms");
-        System.out.println("Median latency for all requests: " + median + " ms");
-        System.out.println("99th percentile latency: " + p99Latency + " ms");
-        System.out.println("95th percentile latency: " + p95Latency + " ms");
+        String output = String.format(
+            "Total number of requests sent: %d\n" + 
+            "Total number of successfully response: %d\n" +
+            "Mean latency for all requests: %f ms\n" + 
+            "Median latency for all requests: %f ms\n" +
+            "99th percentile latency: %d ms\n" +
+            "95th percentile latency: %d ms\n", 
+            requestCount, successCount, mean, median, p99Latency, p95Latency
+        );
+        System.out.println(output);
     }
 }
