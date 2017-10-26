@@ -2,20 +2,19 @@ package com.entingwu.jersey.cache;
 
 import com.entingwu.jersey.model.RFIDLiftData;
 import com.entingwu.jersey.model.SkiMetric;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.inject.Singleton;
 
 @Singleton
 public class ReadCache {
     
     private static ReadCache instance;
-    private Map<String, SkiMetric> tempCacheMap;
-    private Map<String, SkiMetric> readCacheMap;
+    private ConcurrentHashMap<String, SkiMetric> tempCacheMap;
+    private ConcurrentHashMap<String, SkiMetric> readCacheMap;
     
     public ReadCache() {
-        tempCacheMap = new HashMap<>();
-        readCacheMap = new HashMap<>();
+        tempCacheMap = new ConcurrentHashMap<>();
+        readCacheMap = new ConcurrentHashMap<>();
     }
     
     public static ReadCache getInstance() {
@@ -37,15 +36,20 @@ public class ReadCache {
         }
     }
     
-    public synchronized Map<String, SkiMetric> getTempReadCache() {
+    public void putToReadCacheFromDB(SkiMetric skiMetric) {
+        readCacheMap.putIfAbsent(skiMetric.getID(), skiMetric);
+    }
+    
+    public synchronized ConcurrentHashMap<String, SkiMetric> getTempReadCache() {
         readCacheMap.putAll(tempCacheMap);
         System.out.println("readCacheMap: " + readCacheMap.size());
-        Map<String, SkiMetric> data = tempCacheMap;
-        tempCacheMap = new HashMap<>();
+        ConcurrentHashMap<String, SkiMetric> data = tempCacheMap;
+        tempCacheMap = new ConcurrentHashMap<>();
         return data;
     }
     
     public synchronized SkiMetric getSkiMetric(String key) {
+        System.out.println("get cache size: " + readCacheMap.size());
         if (readCacheMap.containsKey(key)) {
             return readCacheMap.get(key);
         }
@@ -53,6 +57,6 @@ public class ReadCache {
     }
     
     public synchronized int size() {
-        return tempCacheMap == null ? 0 : tempCacheMap.size();
+        return tempCacheMap.size();
     }
 }

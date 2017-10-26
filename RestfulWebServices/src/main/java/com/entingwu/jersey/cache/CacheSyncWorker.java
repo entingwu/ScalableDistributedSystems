@@ -6,8 +6,9 @@ import com.entingwu.jersey.model.RFIDLiftData;
 import com.entingwu.jersey.model.SkiMetric;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -60,11 +61,12 @@ public class CacheSyncWorker {
         ReadCache readCache = ReadCache.getInstance(); 
         if (readCache.size() > BATCH_COUNT || 
             (curr - start > SYNC_UP_SCHEDULE) && readCache.size() != 0) {
-            Map<String, SkiMetric> dataMap = readCache.getTempReadCache();
+            ConcurrentHashMap<String, SkiMetric> dataMap = readCache.getTempReadCache();
             try {
                 if (!dataMap.isEmpty()) {
                     List<SkiMetric> batchSkiMetric = 
-                            new ArrayList<>(dataMap.values());
+                            Collections.synchronizedList(
+                                    new ArrayList<>(dataMap.values()));
                     skiMetricDAO.batchUpsertSkiMetric(batchSkiMetric);
                 }
                 start = curr;

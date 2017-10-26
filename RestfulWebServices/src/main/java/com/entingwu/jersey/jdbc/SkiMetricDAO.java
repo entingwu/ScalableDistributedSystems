@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,6 +19,12 @@ public class SkiMetricDAO {
     
     private static final String SKI_METRIC_DAO = SkiMetricDAO.class.getName();
     private static final String SKI_METRIC_TABLE = "skimetrics";
+    private static final String UPSERT_STMT = 
+            "INSERT INTO " + SKI_METRIC_TABLE + "(id, skier_id, day_num, "
+            + "total_vertical, lift_num) VALUES(?,?,?,?,?) "
+            + "ON CONFLICT (id) DO UPDATE SET "
+            + "total_vertical = " + SKI_METRIC_TABLE + ".total_vertical + EXCLUDED.total_vertical, "
+            + "lift_num = " + SKI_METRIC_TABLE+ ".lift_num + EXCLUDED.lift_num";
     private static SkiMetricDAO instance = null;
     protected ConnectUtils connectionUtils;
     
@@ -66,34 +73,32 @@ public class SkiMetricDAO {
         return skiMetric;
     }
     
-    public List<SkiMetric> batchUpsertSkiMetric(List<SkiMetric> SkiMetricList) 
+    public List<SkiMetric> batchUpsertSkiMetric(List<SkiMetric> skiMetricList) 
             throws SQLException {
-        System.out.println("batchUpsertSkiMetric here " + SkiMetricList.size());
-        String stmt = "INSERT INTO " + SKI_METRIC_TABLE + "(id, skier_id, day_num, "
-                + "total_vertical, lift_num) VALUES(?,?,?,?,?) " + 
-                "ON CONFLICT (id) DO UPDATE SET " +
-                "total_vertical = " + SKI_METRIC_TABLE + ".total_vertical + EXCLUDED.total_vertical, " +
-                "lift_num = " + SKI_METRIC_TABLE+ ".lift_num + EXCLUDED.lift_num";
-        System.out.println("batchUpsertSkiMetric " + stmt);
+        System.out.println("batchUpsertSkiMetric here " + skiMetricList.size());
         Connection connection = null;
         PreparedStatement upsertStmt = null;
         List<SkiMetric> failedList = new ArrayList<>();
         
         try {
             connection = ConnectUtils.getConnection();
-            upsertStmt = connection.prepareStatement(stmt);
-            for (SkiMetric skiMetric : SkiMetricList) {
-                upsertStmt.setString(1, skiMetric.getID());
-                upsertStmt.setString(2, skiMetric.getSkierID());
-                upsertStmt.setString(3, skiMetric.getDayNum());
-                upsertStmt.setInt(4, skiMetric.getTotalVertical());
-                upsertStmt.setInt(5, skiMetric.getLiftNum());
-                upsertStmt.addBatch();
+            upsertStmt = connection.prepareStatement(UPSERT_STMT);
+            synchronized(skiMetricList) {
+                Iterator iter = skiMetricList.iterator();
+                while (iter.hasNext()) {
+                    SkiMetric skiMetric = (SkiMetric)iter.next();
+                    upsertStmt.setString(1, skiMetric.getID());
+                    upsertStmt.setString(2, skiMetric.getSkierID());
+                    upsertStmt.setString(3, skiMetric.getDayNum());
+                    upsertStmt.setInt(4, skiMetric.getTotalVertical());
+                    upsertStmt.setInt(5, skiMetric.getLiftNum());
+                    upsertStmt.addBatch();
+                }
             }
             int[] results = upsertStmt.executeBatch();
             for (int i = 0; i < results.length; i++) {
                 if (results[i] == Statement.EXECUTE_FAILED) {
-                    failedList.add(SkiMetricList.get(i));
+                    failedList.add(skiMetricList.get(i));
                 }
             }
             upsertStmt.close();
@@ -108,19 +113,14 @@ public class SkiMetricDAO {
     }
     
     public long upsertSkiMetric(RFIDLiftData record) throws SQLException {
-        String stmt = "INSERT INTO " + SKI_METRIC_TABLE + "(id, skier_id, day_num, "
-                + "total_vertical, lift_num) VALUES(?,?,?,?,?) " + 
-                "ON CONFLICT (id) DO UPDATE SET " +
-                "total_vertical = " + SKI_METRIC_TABLE + ".total_vertical + EXCLUDED.total_vertical, " +
-                "lift_num = " + SKI_METRIC_TABLE+ ".lift_num + EXCLUDED.lift_num";
         Connection connection = null;
         PreparedStatement upsertStmt = null;
         long id = 0;
         
         try {
             connection = ConnectUtils.getConnection();
-            upsertStmt = connection.prepareStatement(stmt);
-            upsertStmt.setString(1, record.getSkierID() + "&" + record.getDayNum());
+            upsertStmt = connection.prepareStatement(UPSERT_STMT);
+            upsertStmt.setString(1, record.getID());
             upsertStmt.setString(2, record.getSkierID());
             upsertStmt.setString(3, record.getDayNum());
             upsertStmt.setInt(4, record.getVertical());
@@ -161,4 +161,3 @@ public class SkiMetricDAO {
         }
     }
 }
-

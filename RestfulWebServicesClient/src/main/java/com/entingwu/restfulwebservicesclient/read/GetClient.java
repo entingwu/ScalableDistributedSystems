@@ -9,7 +9,7 @@ public class GetClient extends RestClient {
     
     private static final String FILE_NAME = "get";
     private static final int SKIER_NUM = 40000;
-    private static int threadNum = 50;
+    private static int threadNum = 100;
 
     @Override
     public void clientProcessing(int threadNum, String ip, String port) 
@@ -18,14 +18,17 @@ public class GetClient extends RestClient {
         super.clientProcessing(threadNum, ip, port);
         
         // 2. Send get_uri to aws server
-        System.out.println("All threads running..."); 
         List<Callable<Metrics>> getTasks = new ArrayList<>();
         int skiersPerThread = SKIER_NUM / threadNum;
-        int start, end = 0;
-        for (int i = 0; i < threadNum; i++) {
-            start = i * skiersPerThread + 1;
-            end = (i + 1) * skiersPerThread;
-            getTasks.add(new GetTask(start, end, REMOTE_URI));
+        if (skiersPerThread < 1) {
+            getTasks.add(new GetTask(0, SKIER_NUM, REMOTE_URI));
+        } else {
+            int start, end = 0;
+            for (int i = 0; i < threadNum; i++) {
+                start = i * skiersPerThread + 1;
+                end = (i + 1) * skiersPerThread;
+                getTasks.add(new GetTask(start, end, REMOTE_URI));
+            }
         }
         long startTime = System.currentTimeMillis();
         runTasks(getTasks, threadNum);
@@ -44,7 +47,6 @@ public class GetClient extends RestClient {
     }
 
     public static void main(String[] args) throws Exception {
-        // 10 35.167.118.155 8080
         if (args.length == 3) {
             threadNum = Integer.parseInt(args[0]);
             ip = args[1];

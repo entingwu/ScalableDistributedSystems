@@ -2,6 +2,7 @@ package com.entingwu.jersey.cache;
 
 import com.entingwu.jersey.model.RFIDLiftData;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.inject.Singleton;
 
@@ -12,7 +13,7 @@ public class WriteCache {
     private List<RFIDLiftData> writeCacheList;
     
     public WriteCache() {
-        writeCacheList = new ArrayList<>();
+        writeCacheList = Collections.synchronizedList(new ArrayList<RFIDLiftData>());
     }
     
     public static WriteCache getInstance() {
@@ -28,11 +29,11 @@ public class WriteCache {
     
     public synchronized List<RFIDLiftData> getWriteCache() {
         List<RFIDLiftData> data = writeCacheList;
-        writeCacheList = new ArrayList<>();
+        writeCacheList = Collections.synchronizedList(new ArrayList<RFIDLiftData>());
         return data;
     }
     
-    public int size() {
-        return writeCacheList == null ? 0 : writeCacheList.size();
+    public synchronized int size() {
+        return writeCacheList.size();
     }
 }

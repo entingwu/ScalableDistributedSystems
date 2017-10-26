@@ -28,7 +28,7 @@ public class PostTask implements Callable<Metrics> {
         this.start = start;
         this.end = end;
         this.records = records;
-        this.uri = uri + "/load";
+        this.uri = uri;
         this.metrics = new Metrics();
     }
     

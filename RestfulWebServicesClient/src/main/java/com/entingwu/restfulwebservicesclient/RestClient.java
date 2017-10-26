@@ -33,7 +33,6 @@ public class RestClient {
         });
         reader.start();
         reader.join();
-        System.out.println("Read records from csv: " + dataList.size());
     }
     
     protected static void runTasks(List<Callable<Metrics>> tasks, int threadNum) 
@@ -50,7 +49,7 @@ public class RestClient {
                 .append(ip)
                 .append(":")
                 .append(port)
-                .append("/RestfulWebServices/rest")
+                .append("/RestfulWebServicesn/rest")
                 .toString();
     }
     

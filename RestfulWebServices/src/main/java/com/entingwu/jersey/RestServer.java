@@ -46,8 +46,13 @@ public class RestServer {
     }
     
     private SkiMetric getDataWithNoCache(String skierID, String dayNum) throws SQLException {
+        ReadCache readCache = ReadCache.getInstance();
         SkiMetricDAO skiMetricDAO = SkiMetricDAO.getInstance();
-        SkiMetric skiMetric = skiMetricDAO.findSkiMetricByFilter(skierID, dayNum); 
+        SkiMetric skiMetric = skiMetricDAO.findSkiMetricByFilter(skierID, dayNum);
+        if (skiMetric != null) {
+            System.out.println("get db: " + skiMetric.toString());
+            readCache.putToReadCacheFromDB(skiMetric);
+        }
         return skiMetric;
     }
     
@@ -57,8 +62,8 @@ public class RestServer {
     @Produces(MediaType.APPLICATION_JSON)
     public String postData(RFIDLiftData record) throws SQLException {
         System.out.println("post: " + record.getSkierID());
-        postDataWithCache(record);
-        //postDataWithNoCache(record);
+        //postDataWithCache(record);
+        postDataWithNoCache(record);
         return record.toString();
     }
     

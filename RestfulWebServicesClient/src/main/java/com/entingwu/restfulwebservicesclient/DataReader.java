@@ -13,7 +13,7 @@ public class DataReader {
     private static final String DATA_READER = DataReader.class.getName();
     private static final String FILE_NAME = 
             "/Users/entingwu/NetBeansProjects/RestfulWebServicesClient/"
-            + "src/main/resources/BSDSAssignment2Day2.csv";
+            + "src/main/resources/BSDSAssignment2Day1.csv";
     
     public static void readFile(List<RFIDLiftData> dataList) {
         String line;
@@ -22,7 +22,7 @@ public class DataReader {
         try {
             br = new BufferedReader(new FileReader(FILE_NAME));
             while ((line = br.readLine()) != null) {
-                if (i > 0 && i < 401) {
+                if (i > 0) {
                     String[] strs = line.split(",");
                     RFIDLiftData record = new RFIDLiftData(
                             strs[0], strs[1], strs[2], 
