@@ -18,8 +18,9 @@ public class RestClient {
     protected static final String LOCAL_URI = 
             "http://localhost:9090/RestfulWebServices/rest";
     protected static String ip = "35.167.118.155";
+    protected static String dns = "webserver-1078042043.us-west-2.elb.amazonaws.com";
     protected static String port = "8080";
-    protected static String REMOTE_URI = getServerAddress(ip, port);
+    protected static String REMOTE_URI = getServerAddress(dns, port);
     protected List<RFIDLiftData> dataList = null;
 
     public void clientProcessing(
@@ -49,10 +50,10 @@ public class RestClient {
         executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
     }
     
-    protected static String getServerAddress(String ip, String port) {
+    protected static String getServerAddress(String dns, String port) {
         return new StringBuilder()
                 .append("http://")
-                .append(ip)
+                .append(dns)
                 .append(":")
                 .append(port)
                 .append("/RestfulWebServices/rest")

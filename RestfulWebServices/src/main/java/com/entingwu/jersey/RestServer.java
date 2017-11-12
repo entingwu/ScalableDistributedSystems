@@ -29,7 +29,7 @@ public class RestServer {
             @PathParam("skierID") String skierID,
             @PathParam("dayNum") String dayNum) throws SQLException {
         ReadCache readCache = ReadCache.getInstance();
-        SkiMetric skiMetric = getDataWithCache(skierID, dayNum, readCache);
+        SkiMetric skiMetric = getDataWithNoCache(skierID, dayNum, readCache);
         return skiMetric;
     }
     
@@ -47,9 +47,9 @@ public class RestServer {
             ReadCache readCache) throws SQLException {
         SkiMetricDAO skiMetricDAO = SkiMetricDAO.getInstance();
         SkiMetric skiMetric = skiMetricDAO.findSkiMetricByFilter(skierID, dayNum);
-        if (skiMetric != null) {
-            readCache.putToReadCacheFromDB(skiMetric);
-        }
+        //if (skiMetric != null) {
+        //    readCache.putToReadCacheFromDB(skiMetric);
+        //}
         return skiMetric;
     }
     

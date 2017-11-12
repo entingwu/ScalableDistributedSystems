@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 public class PostClient extends RestClient {
     
     private static final String POST_CLIENT = PostClient.class.getName();
-    private static final String POST_URI = REMOTE_URI + "/load";
+    private static final String POST_URI = LOCAL_URI + "/load";
     private static final String FILE_NAME = "post";
     private static int threadNum = 100;
 
