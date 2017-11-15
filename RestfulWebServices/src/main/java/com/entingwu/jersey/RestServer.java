@@ -1,6 +1,7 @@
 package com.entingwu.jersey;
 
 import com.entingwu.jersey.cache.CacheSyncWorker;
+import com.entingwu.jersey.cache.LogCache;
 import com.entingwu.jersey.cache.ReadCache;
 import com.entingwu.jersey.cache.WriteCache;
 import com.entingwu.jersey.jdbc.RFIDLiftDAO;
@@ -8,6 +9,7 @@ import com.entingwu.jersey.jdbc.SkiMetricDAO;
 import com.entingwu.jersey.model.RFIDLiftData;
 import com.entingwu.jersey.model.SkiMetric;
 import java.sql.SQLException;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -21,6 +23,8 @@ public class RestServer {
     static {
         CacheSyncWorker.init();
     }
+    
+    private static AtomicInteger errorsCount = new AtomicInteger();
     
     @GET
     @Path("/myvert/{skierID}&{dayNum}")
@@ -58,7 +62,16 @@ public class RestServer {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public String postData(RFIDLiftData record) throws SQLException {
-        postDataWithCache(record);
+        long startTime = System.currentTimeMillis();
+        try {
+            postDataWithCache(record);
+        } catch(Exception e) {
+            errorsCount.getAndIncrement();
+        }
+        long responseTime = System.currentTimeMillis() - startTime;
+        String log = responseTime + "," + errorsCount;
+        LogCache logCache = LogCache.getInstance();
+        logCache.putToLogCache(log);
         return record.toString();
     }
     

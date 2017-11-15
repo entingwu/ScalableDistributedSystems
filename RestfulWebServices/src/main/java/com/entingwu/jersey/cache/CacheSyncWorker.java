@@ -1,5 +1,6 @@
 package com.entingwu.jersey.cache;
 
+import com.entingwu.jersey.SimpleQueueService;
 import com.entingwu.jersey.jdbc.RFIDLiftDAO;
 import com.entingwu.jersey.jdbc.SkiMetricDAO;
 import com.entingwu.jersey.model.RFIDLiftData;
@@ -20,9 +21,11 @@ public class CacheSyncWorker {
     private static final String CACHE_SYNC_WORKER = CacheSyncWorker.class.getName();
     private static final int SYNC_UP_SCHEDULE = 5 * 1000;
     private static final int BATCH_COUNT = 100;
+    private static final int BATCH_CACHE_COUNT = 10;
     private static RFIDLiftDAO rfidLiftDAO;
     private static SkiMetricDAO skiMetricDAO;
     private static long start = System.currentTimeMillis();
+    private static long startCache = System.currentTimeMillis();
     private static final ScheduledExecutorService scheduledExecutorService =
     Executors.newScheduledThreadPool(1);
     
@@ -34,7 +37,26 @@ public class CacheSyncWorker {
             public void run() {
                 syncWriteCacheToDB();
                 syncReadCacheToDB();
+                syncLogCacheToSQS();
             }}, 0 , SYNC_UP_SCHEDULE , TimeUnit.MILLISECONDS);
+    }
+    
+    private static void syncLogCacheToSQS() {
+        long curr = System.currentTimeMillis();
+        LogCache logCache = LogCache.getInstance();
+        if (logCache.size() > BATCH_CACHE_COUNT) {
+            List<String> logData = logCache.getLogCache();
+            StringBuilder sb = new StringBuilder();
+            for (String log : logData) {
+                sb.append(log);
+            }
+            String str = sb.toString();
+            System.out.println("sqs: " + str.length());
+            List<String> msgs = new ArrayList<>();
+            msgs.add(str);
+            SimpleQueueService.sendBatchMsgToSQS(msgs);
+            startCache = curr;
+        }
     }
     
     private static void syncWriteCacheToDB() {
