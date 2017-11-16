@@ -1,6 +1,6 @@
 package com.entingwu.jersey.cache;
 
-import com.entingwu.jersey.SimpleQueueService;
+import com.entingwu.jersey.SimpleQueuePublisher;
 import com.entingwu.jersey.jdbc.RFIDLiftDAO;
 import com.entingwu.jersey.jdbc.SkiMetricDAO;
 import com.entingwu.jersey.model.RFIDLiftData;
@@ -19,17 +19,25 @@ import java.util.logging.Logger;
 public class CacheSyncWorker {
     
     private static final String CACHE_SYNC_WORKER = CacheSyncWorker.class.getName();
+    private static final String SPACE = " ";
     private static final int SYNC_UP_SCHEDULE = 5 * 1000;
     private static final int BATCH_COUNT = 100;
-    private static final int BATCH_CACHE_COUNT = 10;
     private static RFIDLiftDAO rfidLiftDAO;
     private static SkiMetricDAO skiMetricDAO;
     private static long start = System.currentTimeMillis();
-    private static long startCache = System.currentTimeMillis();
     private static final ScheduledExecutorService scheduledExecutorService =
-    Executors.newScheduledThreadPool(1);
+        Executors.newScheduledThreadPool(1);
+    // Log
+    private static final int SYNC_UP_LOG_SCHEDULE = 10 * 1000;
+    private static final int MESSAGE_NUM = 10000;
+    private static List<String> messages;
+    private static long startCache = System.currentTimeMillis();
+    private static final ScheduledExecutorService logExecutorService =
+        Executors.newScheduledThreadPool(1);
     
     public static void init() {
+        messages = new ArrayList<>();
+        SimpleQueuePublisher.prepareSQS();
         rfidLiftDAO = RFIDLiftDAO.getInstance();
         skiMetricDAO = SkiMetricDAO.getInstance();
         scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
@@ -37,25 +45,41 @@ public class CacheSyncWorker {
             public void run() {
                 syncWriteCacheToDB();
                 syncReadCacheToDB();
-                syncLogCacheToSQS();
             }}, 0 , SYNC_UP_SCHEDULE , TimeUnit.MILLISECONDS);
+        
+        logExecutorService.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                putLogCacheToList();
+                syncLogsToSQS();
+            }}, 0 , SYNC_UP_LOG_SCHEDULE , TimeUnit.MILLISECONDS);
     }
     
-    private static void syncLogCacheToSQS() {
+    private static void putLogCacheToList() {
         long curr = System.currentTimeMillis();
         LogCache logCache = LogCache.getInstance();
-        if (logCache.size() > BATCH_CACHE_COUNT) {
+        if (logCache.size() > BATCH_COUNT || 
+            (curr - startCache > SYNC_UP_LOG_SCHEDULE) && logCache.size() > 0) {
             List<String> logData = logCache.getLogCache();
             StringBuilder sb = new StringBuilder();
-            for (String log : logData) {
-                sb.append(log);
+            int i = 0;
+            while (i < logData.size()) {
+                sb.append(logData.get(i)).append(SPACE);
+                if (i != 0 && i % MESSAGE_NUM == 0) {
+                    messages.add(sb.toString());
+                    sb = new StringBuilder();
+                }
+                i++;
             }
-            String str = sb.toString();
-            System.out.println("sqs: " + str.length());
-            List<String> msgs = new ArrayList<>();
-            msgs.add(str);
-            SimpleQueueService.sendBatchMsgToSQS(msgs);
+            messages.add(sb.toString());
             startCache = curr;
+        }
+    }
+    
+    private static void syncLogsToSQS() {
+        if (messages.size() > 0) {
+            SimpleQueuePublisher.sendBatchMsgToSQS(messages);
+            messages = new ArrayList<>();
         }
     }
     

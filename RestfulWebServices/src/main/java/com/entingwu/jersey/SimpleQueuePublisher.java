@@ -10,42 +10,35 @@ import com.amazonaws.services.sqs.model.CreateQueueRequest;
 import com.amazonaws.services.sqs.model.DeleteMessageRequest;
 import com.amazonaws.services.sqs.model.DeleteQueueRequest;
 import com.amazonaws.services.sqs.model.Message;
-import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import com.amazonaws.services.sqs.model.SendMessageBatchRequest;
 import com.amazonaws.services.sqs.model.SendMessageBatchRequestEntry;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class SimpleQueueService {
+public class SimpleQueuePublisher {
     
     private static final String QUEUE_NAME = "MyQueue";
     private static String queueUrl;
-    private static AmazonSQS sqs;
+    public static AmazonSQS sqs;
     public static AtomicInteger id = new AtomicInteger();
     
-    /*public static void main(String[] args) {
-        sendBatchMsgToSQS();
-    }*/
-    
-    public static boolean sendBatchMsgToSQS(List<String> msgs) {
+    public static void prepareSQS() {
         if (sqs == null) {
             sqs = getAmazonSQS();
         }
         try {
             if (queueUrl == null) {
                 queueUrl = createSqsQueue();
-                displayQueue();
             }
-            //List<String> msgs = new ArrayList<>();
-            //msgs.add("text1.");
-            //msgs.add("text2.");
-            //msgs.add("text3.");
-            sendSqsMessage(msgs, queueUrl);
-            
-            //List<Message> messages = receiveSqsMessage();
-            //deleteMessage(messages, queueUrl);
+        } catch (AmazonClientException ex) {
+            System.out.println("Error Message: " + ex.getMessage());
+        }
+    }
+    
+    public static void sendBatchMsgToSQS(List<String> msgs) {
+        try {
+            sendSqsMessage(queueUrl, msgs);
             //deleteQueue(queueUrl);
         } catch (AmazonServiceException ase) {
             System.out.println("Caught an AmazonServiceException, which means your request made it " +
@@ -61,13 +54,8 @@ public class SimpleQueueService {
                     "being able to access the network.");
             System.out.println("Error Message: " + ace.getMessage());
         }
-        return true;
     }
     
-    /*
-     * The ProfileCredentialsProvider will return your [default]
-     * credential profile by reading from the credentials file located at
-     * (~/.aws/credentials).*/
     private static AmazonSQS getAmazonSQS() {
         ProfileCredentialsProvider credentialsProvider = new ProfileCredentialsProvider();
         try{
@@ -93,8 +81,7 @@ public class SimpleQueueService {
         return sqs.createQueue(createQueueRequest).getQueueUrl();
     }
     
-    private static void sendSqsMessage(List<String> msgs, String queueUrl) {
-        System.out.println("message: " + msgs.toString());
+    private static void sendSqsMessage(String queueUrl, List<String> msgs) {
         List<SendMessageBatchRequestEntry> entries = new ArrayList<>();
         for (String msg : msgs) {
             SendMessageBatchRequestEntry entry = 
@@ -105,43 +92,5 @@ public class SimpleQueueService {
         SendMessageBatchRequest smbr = new SendMessageBatchRequest(queueUrl, entries);
         sqs.sendMessageBatch(smbr);
         //sqs.sendMessage(new SendMessageRequest(queueUrl, "This is my message text."));
-    }
-    
-    private static List<Message> receiveSqsMessage() {
-        System.out.println("Receiving messages from MyQueue.\n");
-        ReceiveMessageRequest receiveMessageRequest = new ReceiveMessageRequest(queueUrl);
-        List<Message> messages = sqs.receiveMessage(receiveMessageRequest).getMessages();
-        for (Message message : messages) {
-            System.out.println("  Message");
-            System.out.println("    MessageId:     " + message.getMessageId());
-            System.out.println("    ReceiptHandle: " + message.getReceiptHandle());
-            System.out.println("    MD5OfBody:     " + message.getMD5OfBody());
-            System.out.println("    Body:          " + message.getBody());
-            for (Entry<String, String> entry : message.getAttributes().entrySet()) {
-                System.out.println("  Attribute");
-                System.out.println("    Name:  " + entry.getKey());
-                System.out.println("    Value: " + entry.getValue());
-            }
-        }
-        System.out.println();
-        return messages;
-    }
-    
-    private static void deleteMessage(List<Message> messages, String queueUrl) {
-        System.out.println("Deleting a message.\n");
-        String messageReceiptHandle = messages.get(0).getReceiptHandle();
-        sqs.deleteMessage(new DeleteMessageRequest(queueUrl, messageReceiptHandle));
-    }
-
-    private static void deleteQueue(String queueUrl) {
-        System.out.println("Deleting the test queue.\n");
-        sqs.deleteQueue(new DeleteQueueRequest(queueUrl));
-    }
-    
-    private static void displayQueue() {
-        for (String queueUrl : sqs.listQueues().getQueueUrls()) {
-            System.out.println("  QueueUrl: " + queueUrl);
-        }
-        System.out.println();
     }
 }

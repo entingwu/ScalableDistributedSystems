@@ -22,14 +22,14 @@ public class DataReader {
         try {
             br = new BufferedReader(new FileReader(FILE_NAME));
             while ((line = br.readLine()) != null) {
-                if (i > 0 && i < 2000) {
+                //if (i > 0 && i < 10000) {
                     String[] strs = line.split(",");
                     RFIDLiftData record = new RFIDLiftData(
                             strs[0], strs[1], strs[2], 
                             Integer.parseInt(strs[3]), strs[4]);
                     dataList.add(record); 
-                }
-                i++;
+                //}
+                //i++;
             }
             br.close();
         } catch (IOException ex) {
