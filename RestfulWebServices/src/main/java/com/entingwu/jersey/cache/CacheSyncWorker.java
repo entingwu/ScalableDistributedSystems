@@ -84,13 +84,17 @@ public class CacheSyncWorker {
     }
     
     private static void syncWriteCacheToDB() {
-        long curr = System.currentTimeMillis();
         WriteCache writeCache = WriteCache.getInstance();
+        LogCache logCache = LogCache.getInstance();
+        long curr = System.currentTimeMillis();
         if (writeCache.size() > BATCH_COUNT || 
             ((curr - start > SYNC_UP_SCHEDULE) && writeCache.size() != 0)) {
             List<RFIDLiftData> batchData = writeCache.getWriteCache();
             try {
                 rfidLiftDAO.batchInsertRFIDLift(batchData);
+                long databaseQueryTime = System.currentTimeMillis() - curr;
+                logCache.putToDbQueryTimeList(databaseQueryTime);
+                // put to log cache
                 start = curr;
             } catch (SQLException ex) {
                 Logger.getLogger(CACHE_SYNC_WORKER).log(Level.SEVERE, null, ex);

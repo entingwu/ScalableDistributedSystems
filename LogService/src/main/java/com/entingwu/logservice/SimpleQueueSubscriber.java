@@ -1,4 +1,4 @@
-package com.entingwu.logservices;
+package com.entingwu.logservice;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
