@@ -9,10 +9,11 @@ import javax.inject.Singleton;
 public class LogCache {
     private static LogCache instance;
     private List<String> logCacheList;
-    private List<Long> dbQueryTimeList; 
+    private List<String> dbQueryTimeList; 
     
     public LogCache() {
         logCacheList = Collections.synchronizedList(new ArrayList<String>());
+        dbQueryTimeList = Collections.synchronizedList(new ArrayList<String>());
     }
    
     public static LogCache getInstance() {
@@ -27,12 +28,18 @@ public class LogCache {
     }
     
     public synchronized void putToDbQueryTimeList(long dbQueryTime) {
-        dbQueryTimeList.add(dbQueryTime);
+        dbQueryTimeList.add(Long.toString(dbQueryTime));
     }
     
     public synchronized List<String> getLogCache() {
         List<String> data = logCacheList;
-        logCacheList = Collections.synchronizedList(new ArrayList<String> ());
+        logCacheList = Collections.synchronizedList(new ArrayList<String>());
+        return data;
+    }
+    
+    public synchronized List<String> getDbQueryTimeCache() {
+        List<String> data = dbQueryTimeList;
+        dbQueryTimeList = Collections.synchronizedList(new ArrayList<String>());
         return data;
     }
    

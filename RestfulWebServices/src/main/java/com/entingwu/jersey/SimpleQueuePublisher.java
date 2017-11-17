@@ -7,9 +7,6 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.amazonaws.services.sqs.model.CreateQueueRequest;
-import com.amazonaws.services.sqs.model.DeleteMessageRequest;
-import com.amazonaws.services.sqs.model.DeleteQueueRequest;
-import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.SendMessageBatchRequest;
 import com.amazonaws.services.sqs.model.SendMessageBatchRequestEntry;
 import java.util.ArrayList;
@@ -38,8 +35,15 @@ public class SimpleQueuePublisher {
     
     public static void sendBatchMsgToSQS(List<String> msgs) {
         try {
-            sendSqsMessage(queueUrl, msgs);
-            //deleteQueue(queueUrl);
+            List<SendMessageBatchRequestEntry> entries = new ArrayList<>();
+            for (String msg : msgs) {
+                SendMessageBatchRequestEntry entry = 
+                        new SendMessageBatchRequestEntry(String.valueOf(id.get()), msg);
+                entries.add(entry);
+                id.getAndIncrement();
+            }
+            SendMessageBatchRequest smbr = new SendMessageBatchRequest(queueUrl, entries);
+            sqs.sendMessageBatch(smbr);
         } catch (AmazonServiceException ase) {
             System.out.println("Caught an AmazonServiceException, which means your request made it " +
                     "to Amazon SQS, but was rejected with an error response for some reason.");
@@ -79,18 +83,5 @@ public class SimpleQueuePublisher {
     private static String createSqsQueue() {
         CreateQueueRequest createQueueRequest = new CreateQueueRequest(QUEUE_NAME);
         return sqs.createQueue(createQueueRequest).getQueueUrl();
-    }
-    
-    private static void sendSqsMessage(String queueUrl, List<String> msgs) {
-        List<SendMessageBatchRequestEntry> entries = new ArrayList<>();
-        for (String msg : msgs) {
-            SendMessageBatchRequestEntry entry = 
-                    new SendMessageBatchRequestEntry(String.valueOf(id.get()), msg);
-            entries.add(entry);
-            id.getAndIncrement();
-        }
-        SendMessageBatchRequest smbr = new SendMessageBatchRequest(queueUrl, entries);
-        sqs.sendMessageBatch(smbr);
-        //sqs.sendMessage(new SendMessageRequest(queueUrl, "This is my message text."));
     }
 }

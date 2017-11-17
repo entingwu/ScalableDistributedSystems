@@ -57,8 +57,7 @@ public class SimpleQueueSubscriber {
     public static void deleteSqsMessage(String queueUrl, List<Message> messages) {
         System.out.println("Deleting batch message.\n");
         List<DeleteMessageBatchRequestEntry> msgs = new ArrayList<>();
-        for (int i = 0; i < messages.size(); i++) {
-            Message message = messages.get(0);
+        for (Message message : messages) {
             DeleteMessageBatchRequestEntry dmbre = 
                     new DeleteMessageBatchRequestEntry(
                         message.getMessageId(), 
@@ -66,7 +65,6 @@ public class SimpleQueueSubscriber {
             msgs.add(dmbre);
         }
         sqs.deleteMessageBatch(queueUrl, msgs);
-        //sqs.deleteMessage(new DeleteMessageRequest(queueUrl, messageReceiptHandle));
     }
     
     private static AmazonSQS getAmazonSQS() {
