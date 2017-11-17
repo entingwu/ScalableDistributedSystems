@@ -33,7 +33,7 @@ public class CacheSyncWorker {
     private static final String PREFIX_DB = "D ";
     private static List<String> messages;
     private static long startCache = System.currentTimeMillis();
-    private static final ScheduledExecutorService publishLogService =
+    private static final ScheduledExecutorService logPublisherService =
         Executors.newScheduledThreadPool(1);
     
     public static void init() {
@@ -48,7 +48,7 @@ public class CacheSyncWorker {
                 syncReadCacheToDB();
             }}, 0 , SYNC_UP_SCHEDULE , TimeUnit.MILLISECONDS);
         
-        publishLogService.scheduleAtFixedRate(new Runnable() {
+        logPublisherService.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
                 putLogCacheToList();

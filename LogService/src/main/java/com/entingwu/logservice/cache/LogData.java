@@ -1,4 +1,4 @@
-package com.entingwu.logservice.model;
+package com.entingwu.logservice.cache;
 
 public class LogData {
 

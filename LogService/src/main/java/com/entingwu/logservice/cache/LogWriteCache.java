@@ -1,4 +1,4 @@
-package com.entingwu.logservice;
+package com.entingwu.logservice.cache;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,7 +27,23 @@ public class LogWriteCache {
         logCacheList.add(log);
     }
     
-    public synchronized void putToDbQueryTimeList(int dbQueryTime) {
-        dbQueryTimeList.add(Integer.toString(dbQueryTime));
+    public synchronized void putToDbQueryTimeList(String dbQueryTime) {
+        dbQueryTimeList.add(dbQueryTime);
+    }
+    
+    public synchronized List<String> getLogCache() {
+        List<String> data = logCacheList;
+        logCacheList = Collections.synchronizedList(new ArrayList<String>());
+        return data;
+    }
+    
+    public synchronized List<String> getDbQueryTimeList() {
+        List<String> data = dbQueryTimeList;
+        dbQueryTimeList = Collections.synchronizedList(new ArrayList<String>());
+        return data;
+    }
+    
+    public synchronized int size() {
+        return logCacheList.size();
     }
 }

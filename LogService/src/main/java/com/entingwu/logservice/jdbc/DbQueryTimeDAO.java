@@ -28,25 +28,6 @@ public class DbQueryTimeDAO {
         return instance;
     }
     
-    public void insertDbQueryData(int dbQueryTime) throws SQLException {
-        Connection connection = null;
-        PreparedStatement insertStmt = null;
-        
-        try {
-            connection = ConnectUtils.getConnection();
-            insertStmt = connection.prepareStatement(INSERT_STMT);
-            insertStmt.setInt(1, dbQueryTime);
-            insertStmt.executeUpdate();
-            insertStmt.close();
-        } catch (SQLException ex) {
-            Logger.getLogger(DB_QUERY_DAO).log(Level.SEVERE, null, ex);
-        } finally {
-            if (connection != null) {
-                connection.close();
-            }
-        }     
-    }
-    
     public void batchInsertLogDAO(List<Integer> dbQueryTimeList) 
             throws SQLException {
         Connection connection = null;
