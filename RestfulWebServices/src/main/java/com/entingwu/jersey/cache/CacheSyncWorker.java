@@ -28,8 +28,8 @@ public class CacheSyncWorker {
     private static final ScheduledExecutorService scheduledExecutorService =
         Executors.newScheduledThreadPool(1);
     // Log
-    private static final int SYNC_UP_LOG_SCHEDULE = 20 * 1000;
-    private static final int MESSAGE_NUM = 20 * 1000;
+    private static final int SYNC_UP_LOG_SCHEDULE = 10 * 1000;
+    private static final int MESSAGE_NUM = 10 * 1000;
     private static final String PREFIX_DB = "D ";
     private static List<String> messages;
     private static long startCache = System.currentTimeMillis();

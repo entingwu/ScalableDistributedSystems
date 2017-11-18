@@ -56,7 +56,7 @@ public class RestClient {
                 .append(dns)
                 .append(":")
                 .append(port)
-                .append("/RestfulWebServices/rest")
+                .append("/RestfulWebServicesqs/rest")
                 .toString();
     }
     

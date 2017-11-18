@@ -2,7 +2,8 @@ package com.entingwu.jersey;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
@@ -61,18 +62,22 @@ public class SimpleQueuePublisher {
     }
     
     private static AmazonSQS getAmazonSQS() {
-        ProfileCredentialsProvider credentialsProvider = new ProfileCredentialsProvider();
-        try{
-            credentialsProvider.getCredentials();
-        } catch (Exception e) {
-            throw new AmazonClientException(
-                    "Cannot load the credentials from the credential profiles file. " +
-                    "Please make sure that your credentials file is at the correct " +
-                    "location (~/.aws/credentials), and is in valid format.",
-                    e);
-        }
+//        AWSCredentialsProvider credentialsProvider = DefaultAWSCredentialsProviderChain.getInstance();
+//        try{
+//            System.out.println("Starting to get credentials");
+//            credentialsProvider.getCredentials();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            throw new AmazonClientException(
+//                    "Cannot load the credentials from the credential profiles file. " +
+//                    "Please make sure that your credentials file is at the correct " +
+//                    "location (~/.aws/credentials), and is in valid format.",
+//                    e);
+//        }
+        BasicAWSCredentials awsCreds = new BasicAWSCredentials(
+                "access_key_id", "secret_access_key");
         sqs = AmazonSQSClientBuilder.standard()
-                .withCredentials(credentialsProvider)
+                .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
                 .withRegion(Regions.US_WEST_2)
                 .build();
         

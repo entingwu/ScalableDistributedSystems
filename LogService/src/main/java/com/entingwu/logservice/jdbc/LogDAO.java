@@ -3,12 +3,10 @@ package com.entingwu.logservice.jdbc;
 import com.entingwu.logservice.cache.LogData;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class LogDAO {
     
@@ -28,25 +26,6 @@ public class LogDAO {
             instance = new LogDAO();
         }
         return instance;
-    }
-    
-    public void getPercentContInDB(String columnName, double percent) {
-        Connection connection = null;
-        PreparedStatement selectStmt;
-        ResultSet result = null;
-        String stmt = 
-                "SELECT PERCENTILE_CONT(" + percent + ") WITHIN GROUP(ORDER by " 
-                + columnName + ") FROM " + LOG_DATA + ";";
-        try {
-            connection = ConnectUtils.getConnection();
-            selectStmt = connection.prepareStatement(stmt);
-            result = selectStmt.executeQuery();
-            if (result.next()) {
-            }
-            selectStmt.close();
-        } catch (SQLException ex) {
-            Logger.getLogger(LOGDAO).log(Level.SEVERE, null, ex);
-        }
     }
     
     public void batchInsertLogDAO(List<LogData> logDataList) throws SQLException {

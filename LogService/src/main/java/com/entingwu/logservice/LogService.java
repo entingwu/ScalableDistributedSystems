@@ -20,7 +20,7 @@ public class LogService {
     
     private static final String LOG_SERVICE = LogService.class.getSimpleName();
     private static final int SYNC_UP_SCHEDULE = 5 * 1000;
-    private static final int SYNC_UP_DB_SCHEDULE = 20 * 1000;
+    private static final int SYNC_UP_DB_SCHEDULE = 10 * 1000;
     private static final int BATCH_COUNT = 100;
     private static final String PREFIX_DB = "D";
     public static final String SPACE = " ";
@@ -80,7 +80,7 @@ public class LogService {
                     System.out.println("received: " + receivedMap.values().size());
                 }
             }
-            //SimpleQueueSubscriber.deleteSqsMessage(queueUrl, deleteMsgs);
+            SimpleQueueSubscriber.deleteSqsMessage(queueUrl, deleteMsgs);
             start = curr;
         } catch (Exception ex) {
             ex.printStackTrace();
