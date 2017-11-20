@@ -20,9 +20,10 @@ public class LogService {
     
     private static final String LOG_SERVICE = LogService.class.getSimpleName();
     private static final int SYNC_UP_SCHEDULE = 5 * 1000;
-    private static final int SYNC_UP_DB_SCHEDULE = 10 * 1000;
+    private static final int SYNC_UP_DB_SCHEDULE = 5 * 1000;
     private static final int BATCH_COUNT = 100;
     private static final String PREFIX_DB = "D";
+    private static final String PREFIX_GET = "G";
     public static final String SPACE = " ";
     public static final String COMMA = ",";
     private static Map<String, Message> receivedMap;
@@ -77,7 +78,7 @@ public class LogService {
                     receivedMap.put(messageId, message);
                     deleteMsgs.add(message);
                     putMessageInCache(message.getBody());
-                    System.out.println("received: " + receivedMap.values().size());
+                    //System.out.println("received: " + receivedMap.values().size());
                 }
             }
             SimpleQueueSubscriber.deleteSqsMessage(queueUrl, deleteMsgs);
@@ -89,35 +90,45 @@ public class LogService {
     
     private static void putMessageInCache(String msg) {
         String[] rawData = msg.trim().split(SPACE);
-        if (rawData[0].equals(PREFIX_DB)) {// db_time
-            System.out.println("dbtime: " + msg.substring(2));
-            cache.putToDbQueryTimeList(msg.substring(2));
+        if (rawData[0].equals(PREFIX_DB)) { // db_query_time
+            String postdbTime = msg.substring(2);
+            System.out.println("postdbtime: " + postdbTime);
+            if (postdbTime.length() != 0) {
+                cache.putToDbQueryTimeList(postdbTime);
+            }
+        } else if (rawData[0].equals(PREFIX_GET)) {
+            System.out.println("getlog: " + msg);
+            cache.putToGetLogCache(msg.substring(2));
         } else { // response_time, error_num
-            System.out.println("log: " + msg);
-            cache.putToLogCache(msg);
+            System.out.println("postlog: " + msg);
+            cache.putToPostLogCache(msg);
         }
     }
     
-    private static List<LogData> convertToLogData() {
+    private static List<LogData> convertToLogData(List<String> logCache, 
+            boolean isPost) {
         List<LogData> logCacheList = new ArrayList<>();
-        for (String message : cache.getLogCache()) {
+        for (String message : logCache) {
             String[] rawDataList = message.trim().split(SPACE);
             for (String rawData : rawDataList) {
                 String[] pair = rawData.trim().split(COMMA);
-                LogData log = new LogData(
-                        Integer.parseInt(pair[0]), 
-                        Integer.parseInt(pair[1]));
+                LogData log = isPost 
+                        ? new LogData(Integer.parseInt(pair[0]), 0, 
+                                      Integer.parseInt(pair[1]), 1) 
+                        : new LogData(Integer.parseInt(pair[0]), 
+                                      Integer.parseInt(pair[0]), 
+                                      Integer.parseInt(pair[1]), 0);
                 logCacheList.add(log);
             }
             msgCount += rawDataList.length;
         }
-        System.out.println("total:" + msgCount);
+        //System.out.println("total:" + msgCount);
         return logCacheList;
     }
     
     private static List<Integer> convertToDbQuerytTime() {
         List<Integer> dbQueryTimeList = new ArrayList<>();
-        for (String message : cache.getDbQueryTimeList()) {
+        for (String message : cache.getDbQueryTimeCache()) {
             String[] rawDataList = message.trim().split(SPACE);
             for (String rawData : rawDataList) {
                 dbQueryTimeList.add(Integer.parseInt(rawData));
@@ -128,13 +139,18 @@ public class LogService {
     
     private static void syncLogCacheToDB() {
         long curr = System.currentTimeMillis();
-        if (cache.size() > BATCH_COUNT || 
-                (curr - start > SYNC_UP_DB_SCHEDULE) && cache.size() > 0) {
-            List<LogData> logCacheList = convertToLogData();
-            List<Integer> dbQueryTimeList = convertToDbQuerytTime();
+        if (cache.postSize() > BATCH_COUNT || 
+                (curr - start > SYNC_UP_DB_SCHEDULE) && 
+                (cache.postSize() > 0 || cache.getSize() > 0) ) {
+            List<LogData> postlogCacheList = 
+                    convertToLogData(cache.getPostLogCache(), true);
+            List<LogData> getlogCacheList = 
+                    convertToLogData(cache.getGetLogCache(), false);
+            List<Integer> dbQueryTimeList = convertToDbQuerytTime(); // post
             try {
-                logDAO.batchInsertLogDAO(logCacheList);
-                dbQueryDAO.batchInsertLogDAO(dbQueryTimeList);
+                logDAO.batchInsertLogDAO(postlogCacheList);
+                logDAO.batchInsertLogDAO(getlogCacheList);
+                dbQueryDAO.batchInsertPostLogDAO(dbQueryTimeList);
             } catch (SQLException ex) {
                 Logger.getLogger(LOG_SERVICE).log(Level.SEVERE, null, ex);
             }

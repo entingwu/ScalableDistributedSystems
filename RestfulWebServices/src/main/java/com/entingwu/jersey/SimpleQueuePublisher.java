@@ -75,7 +75,7 @@ public class SimpleQueuePublisher {
 //                    e);
 //        }
         BasicAWSCredentials awsCreds = new BasicAWSCredentials(
-                "access_key_id", "secret_access_key");
+                "access_key", "secret_key");
         sqs = AmazonSQSClientBuilder.standard()
                 .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
                 .withRegion(Regions.US_WEST_2)

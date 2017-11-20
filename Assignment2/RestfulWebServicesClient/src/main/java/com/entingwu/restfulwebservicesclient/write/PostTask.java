@@ -52,7 +52,7 @@ public class PostTask implements Callable<Metrics> {
                 isSuccess = true;
                 counter.getAndIncrement();
                 if (counter.get() % 100 == 0) {
-                    //System.out.println("Progress: " + counter.get());
+                    System.out.println("Progress: " + counter.get());
                 }
             }
             isSent = true;

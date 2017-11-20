@@ -9,10 +9,10 @@ import java.util.logging.Level;
 
 public class DbQueryTimeDAO {
     
-    private static final String DB_QUERY_DAO = DbQueryTimeDAO.class.getName();
-    private static final String DB_QUERY = "dbquery";
+    private static final String POST_DB_QUERY_DAO = DbQueryTimeDAO.class.getName();
+    private static final String POST_DB_QUERY = "postdbquery";
     private static final String INSERT_STMT = 
-            "INSERT INTO " + DB_QUERY + "(db_query_time) VALUES (?);";
+            "INSERT INTO " + POST_DB_QUERY + "(db_query_time) VALUES (?);";
     private static DbQueryTimeDAO instance;
     protected ConnectUtils connectUtils;
    
@@ -27,7 +27,7 @@ public class DbQueryTimeDAO {
         return instance;
     }
     
-    public void batchInsertLogDAO(List<Integer> dbQueryTimeList) 
+    public void batchInsertPostLogDAO(List<Integer> dbQueryTimeList) 
             throws SQLException {
         Connection connection = null;
         PreparedStatement insertStmt = null;
@@ -44,7 +44,7 @@ public class DbQueryTimeDAO {
             insertStmt.executeBatch();
             insertStmt.close();
         } catch(SQLException ex) {
-            java.util.logging.Logger.getLogger(DB_QUERY_DAO).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(POST_DB_QUERY_DAO).log(Level.SEVERE, null, ex);
         } finally {
             if (connection != null) {
                 connection.close();

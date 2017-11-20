@@ -13,7 +13,8 @@ public class LogDAO {
     private static final String LOGDAO = LogDAO.class.getName();
     private static final String LOG_DATA = "logdata";
     private static final String INSERT_STMT = 
-            "INSERT INTO " + LOG_DATA + "(response_time, error_num) VALUES (?, ?);";
+            "INSERT INTO " + LOG_DATA + "(response_time, db_query_time, "
+            + "error_num, is_post) VALUES (?, ?, ?, ?);";
     private static LogDAO instance;
     protected ConnectUtils connectUtils;
    
@@ -40,7 +41,9 @@ public class LogDAO {
                 while (iter.hasNext()) {
                     log = (LogData)iter.next();
                     insertStmt.setInt(1, log.getResponseTime());
-                    insertStmt.setInt(2, log.getErrorNum());
+                    insertStmt.setInt(2, log.getDbQueryTime());
+                    insertStmt.setInt(3, log.getErrorNum());
+                    insertStmt.setInt(4, log.getIsPost());
                     insertStmt.addBatch();
                 }
             }

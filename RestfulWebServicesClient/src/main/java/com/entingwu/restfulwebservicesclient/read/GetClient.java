@@ -12,7 +12,7 @@ public class GetClient extends RestClient {
     
     private static final String GET_CLIENT = GetClient.class.getName();
     private static final String FILE_NAME = "get";
-    private static final int SKIER_NUM = 3000;//40000;
+    private static final int SKIER_NUM = 10000; //3000;//40000;
     private static int threadNum = 100;
 
     @Override
@@ -30,7 +30,7 @@ public class GetClient extends RestClient {
                 getTasks.add(new GetTask(
                         i * skiersPerThread + 1,   // start
                         (i + 1) * skiersPerThread, // end 
-                        LOCAL_URI));
+                        REMOTE_URI));
             }
         }
         long startTime = System.currentTimeMillis();

@@ -14,7 +14,7 @@ import javax.ws.rs.core.Response;
 
 public class GetTask implements Callable<Metrics> {
     
-    private static final String DAY_NUM = "1";
+    private static final String DAY_NUM = "999";
     private final int start;
     private final int end;
     private final String uri;

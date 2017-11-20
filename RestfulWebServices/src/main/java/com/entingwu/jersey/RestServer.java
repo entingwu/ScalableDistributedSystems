@@ -19,10 +19,10 @@ import javax.ws.rs.core.MediaType;
 
 @Path("/")
 public class RestServer { 
+    private static final String COMMA = ",";
     static {
         CacheSyncWorker.init();
     }
-    private static final String COMMA = ",";
     
     @GET
     @Path("/myvert/{skierID}&{dayNum}")
@@ -35,6 +35,27 @@ public class RestServer {
         return skiMetric;
     }
     
+    private SkiMetric getDataWithNoCache(String skierID, String dayNum, 
+            ReadCache readCache) throws SQLException {
+        SkiMetricDAO skiMetricDAO = SkiMetricDAO.getInstance();
+        SkiMetric skiMetric = new SkiMetric();
+        long startTime = System.currentTimeMillis();
+        int errorNum = 0;
+        try {
+            skiMetric = skiMetricDAO.findSkiMetricByFilter(skierID, dayNum);  
+        } catch(SQLException ex) {
+            errorNum = 1;
+        }
+        long responseTime = System.currentTimeMillis() - startTime;
+        String log = responseTime + COMMA + errorNum;
+        LogCache logCache = LogCache.getInstance();
+        logCache.putToGetCache(log);
+        /*if (skiMetric != null) {
+            readCache.putToReadCacheFromDB(skiMetric);
+        }*/
+        return skiMetric;
+    }
+    
     private SkiMetric getDataWithCache(String skierID, String dayNum, 
             ReadCache readCache) throws SQLException {
         String key = RFIDLiftData.getID(skierID, dayNum);
@@ -43,16 +64,6 @@ public class RestServer {
             return skiMetric;
         }
         return getDataWithNoCache(skierID, dayNum, readCache);
-    }
-    
-    private SkiMetric getDataWithNoCache(String skierID, String dayNum, 
-            ReadCache readCache) throws SQLException {
-        SkiMetricDAO skiMetricDAO = SkiMetricDAO.getInstance();
-        SkiMetric skiMetric = skiMetricDAO.findSkiMetricByFilter(skierID, dayNum);
-        //if (skiMetric != null) {
-        //    readCache.putToReadCacheFromDB(skiMetric);
-        //}
-        return skiMetric;
     }
     
     @POST
@@ -70,7 +81,7 @@ public class RestServer {
         long responseTime = System.currentTimeMillis() - startTime;
         String log = responseTime + COMMA + errorNum;
         LogCache logCache = LogCache.getInstance();
-        logCache.putToLogCache(log);
+        logCache.putToPostCache(log);
         return record.toString();
     }
     

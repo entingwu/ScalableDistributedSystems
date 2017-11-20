@@ -8,12 +8,14 @@ import javax.inject.Singleton;
 @Singleton
 public class LogCache {
     private static LogCache instance;
-    private List<String> logCacheList;
-    private List<String> dbQueryTimeList; 
+    private List<String> postCacheList;
+    private List<String> postDbTimeList;
+    private List<String> getCacheList;
     
     public LogCache() {
-        logCacheList = Collections.synchronizedList(new ArrayList<String>());
-        dbQueryTimeList = Collections.synchronizedList(new ArrayList<String>());
+        postCacheList = Collections.synchronizedList(new ArrayList<String>());
+        postDbTimeList = Collections.synchronizedList(new ArrayList<String>());
+        getCacheList = Collections.synchronizedList(new ArrayList<String>());
     }
    
     public static LogCache getInstance() {
@@ -23,27 +25,41 @@ public class LogCache {
         return instance;
     }
     
-    public synchronized void putToLogCache(String log) {
-        logCacheList.add(log);
+    public synchronized void putToPostCache(String log) {
+        postCacheList.add(log);
     }
     
-    public synchronized void putToDbQueryTimeList(long dbQueryTime) {
-        dbQueryTimeList.add(Long.toString(dbQueryTime));
+    public synchronized void putToPostDbTimeList(long dbQueryTime) {
+        postDbTimeList.add(Long.toString(dbQueryTime));
     }
     
-    public synchronized List<String> getLogCache() {
-        List<String> data = logCacheList;
-        logCacheList = Collections.synchronizedList(new ArrayList<String>());
+    public synchronized void putToGetCache(String log) {
+        getCacheList.add(log);
+    }
+    
+    public synchronized List<String> getPostLogCache() {
+        List<String> data = postCacheList;
+        postCacheList = Collections.synchronizedList(new ArrayList<String>());
         return data;
     }
     
     public synchronized List<String> getDbQueryTimeCache() {
-        List<String> data = dbQueryTimeList;
-        dbQueryTimeList = Collections.synchronizedList(new ArrayList<String>());
+        List<String> data = postDbTimeList;
+        postDbTimeList = Collections.synchronizedList(new ArrayList<String>());
+        return data;
+    }
+    
+    public synchronized List<String> getGetLogCache() {
+        List<String> data = getCacheList;
+        getCacheList = Collections.synchronizedList(new ArrayList<String>());
         return data;
     }
    
-    public synchronized int size() {
-        return logCacheList.size();
+    public synchronized int postSize() {
+        return postCacheList.size();
+    }
+    
+    public synchronized int getSize() {
+        return getCacheList.size();
     }
 }

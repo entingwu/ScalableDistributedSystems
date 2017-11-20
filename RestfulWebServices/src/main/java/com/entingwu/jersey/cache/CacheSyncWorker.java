@@ -31,14 +31,18 @@ public class CacheSyncWorker {
     private static final int SYNC_UP_LOG_SCHEDULE = 10 * 1000;
     private static final int MESSAGE_NUM = 10 * 1000;
     private static final String PREFIX_DB = "D ";
-    private static List<String> messages;
-    private static long startCache = System.currentTimeMillis();
+    private static final String PREFIX_GET = "G ";
+    private static List<String> postLogMsgs;
+    private static List<String> getLogMsgs;
+    private static long startPost = System.currentTimeMillis();
+    private static long startGet = System.currentTimeMillis();
     private static final ScheduledExecutorService logPublisherService =
         Executors.newScheduledThreadPool(1);
     
     public static void init() {
-        messages = new ArrayList<>();
         SimpleQueuePublisher.prepareSQS();
+        postLogMsgs = new ArrayList<>();
+        getLogMsgs = new ArrayList<>();
         rfidLiftDAO = RFIDLiftDAO.getInstance();
         skiMetricDAO = SkiMetricDAO.getInstance();
         scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
@@ -51,25 +55,38 @@ public class CacheSyncWorker {
         logPublisherService.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
-                putLogCacheToList();
-                syncLogsToSQS();
+                sendPostLogCacheToSQS();
+                sendGetLogCacheToSQS();
             }}, 0 , SYNC_UP_LOG_SCHEDULE , TimeUnit.MILLISECONDS);
     }
     
-    private static void putLogCacheToList() {
+    private static void sendPostLogCacheToSQS() {
         long curr = System.currentTimeMillis();
         LogCache logCache = LogCache.getInstance();
-        if (logCache.size() > BATCH_COUNT || 
-            (curr - startCache > SYNC_UP_LOG_SCHEDULE) && logCache.size() > 0) {
+        if (logCache.postSize() > BATCH_COUNT || 
+            (curr - startPost > SYNC_UP_LOG_SCHEDULE) && logCache.postSize() > 0) {
             StringBuilder sb = new StringBuilder();
-            createMessage(logCache.getLogCache(), sb);
+            createMessage(postLogMsgs, logCache.getPostLogCache(), sb);
             sb = new StringBuilder().append(PREFIX_DB);
-            createMessage(logCache.getDbQueryTimeCache(), sb);
-            startCache = curr;
+            createMessage(postLogMsgs, logCache.getDbQueryTimeCache(), sb);
+            startPost = curr;
         }
+        syncLogsToSQS(postLogMsgs);
     }
     
-    private static void createMessage(List<String> cache, StringBuilder sb) {
+    private static void sendGetLogCacheToSQS() {
+        long curr = System.currentTimeMillis();
+        LogCache logCache = LogCache.getInstance();
+        if (logCache.getSize() > BATCH_COUNT || 
+            (curr - startGet > SYNC_UP_LOG_SCHEDULE) && logCache.getSize() > 0) {
+            StringBuilder sb = new StringBuilder().append(PREFIX_GET);
+            createMessage(getLogMsgs, logCache.getGetLogCache(), sb);
+            startGet = curr;
+        }
+        syncLogsToSQS(getLogMsgs);
+    }
+    
+    private static void createMessage(List<String> messages, List<String> cache, StringBuilder sb) {
         int i = 0;
         while (i < cache.size()) {
             sb.append(cache.get(i)).append(SPACE);
@@ -82,10 +99,10 @@ public class CacheSyncWorker {
         messages.add(sb.toString());
     }
     
-    private static void syncLogsToSQS() {
+    private static void syncLogsToSQS(List<String> messages) {
         if (messages.size() > 0) {
             SimpleQueuePublisher.sendBatchMsgToSQS(messages);
-            messages = new ArrayList<>();
+            messages.clear();
         }
     }
     
@@ -98,7 +115,7 @@ public class CacheSyncWorker {
             List<RFIDLiftData> batchData = writeCache.getWriteCache();
             try {
                 rfidLiftDAO.batchInsertRFIDLift(batchData);
-                logCache.putToDbQueryTimeList(System.currentTimeMillis() - curr);
+                logCache.putToPostDbTimeList(System.currentTimeMillis() - curr);
                 start = curr;
             } catch (SQLException ex) {
                 Logger.getLogger(CACHE_SYNC_WORKER).log(Level.SEVERE, null, ex);
@@ -107,8 +124,9 @@ public class CacheSyncWorker {
     }
     
     private static void syncReadCacheToDB() {
-        long curr = System.currentTimeMillis();
         ReadCache readCache = ReadCache.getInstance(); 
+        LogCache logCache = LogCache.getInstance();
+        long curr = System.currentTimeMillis();
         if (readCache.size() > BATCH_COUNT || 
             (curr - start > SYNC_UP_SCHEDULE) && readCache.size() != 0) {
             ConcurrentHashMap<String, SkiMetric> dataMap = readCache.getTempReadCache();
@@ -118,6 +136,7 @@ public class CacheSyncWorker {
                             Collections.synchronizedList(
                                     new ArrayList<>(dataMap.values()));
                     skiMetricDAO.batchUpsertSkiMetric(batchSkiMetric);
+                    logCache.putToPostDbTimeList(System.currentTimeMillis() - curr);
                 }
                 start = curr;
             } catch (SQLException ex) {
